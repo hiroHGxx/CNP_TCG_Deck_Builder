@@ -43,8 +43,8 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
     const rect = cardRef.current?.getBoundingClientRect()
     if (rect) {
       setTooltipPosition({
-        x: rect.left + rect.width / 2,
-        y: rect.top
+        x: rect.left + rect.width / 2, // カード中央のX座標
+        y: rect.top + window.scrollY    // スクロール位置を考慮したY座標
       })
       setShowTooltip(true)
     }
@@ -60,8 +60,8 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
     if (rect) {
       const timeout = setTimeout(() => {
         setTooltipPosition({
-          x: rect.left + rect.width / 2,
-          y: rect.top
+          x: rect.left + rect.width / 2, // カード中央のX座標
+          y: rect.top + window.scrollY    // スクロール位置を考慮したY座標
         })
         setShowTooltip(true)
       }, 500) // 500ms長押しでツールチップ表示
