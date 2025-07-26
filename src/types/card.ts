@@ -17,6 +17,7 @@ export interface Card {
   pack: string;             // 収録パック名
   illustrator: string;      // イラストレーター
   imageFile: string;        // 画像ファイル名
+  imageUrl: string;         // 画像URL（Supabase CDN）
 }
 
 export type CardColor = 'red' | 'blue' | 'green' | 'yellow' | 'colorless';
