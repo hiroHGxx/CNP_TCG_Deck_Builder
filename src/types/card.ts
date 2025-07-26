@@ -22,7 +22,7 @@ export interface Card {
 
 export type CardColor = 'red' | 'blue' | 'green' | 'yellow' | 'colorless';
 
-export type CardRarity = 'common' | 'rare' | 'rare_rare' | 'super_rare' | 'ultra_rare' | 'RRR';
+export type CardRarity = 'common' | 'rare' | 'rare_rare' | 'triple_rare' | 'super_rare' | 'ultra_rare' | 'RRR';
 
 export type CardType = 'unit' | 'supporter' | 'event';
 
