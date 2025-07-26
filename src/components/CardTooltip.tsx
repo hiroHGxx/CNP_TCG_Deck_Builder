@@ -13,66 +13,72 @@ const CardTooltip: React.FC<CardTooltipProps> = ({ card, visible, position }) =>
   // Excel風配置ロジック: カードを隠さない位置を計算
   const calculateOptimalPosition = () => {
     const tooltipWidth = 280
-    const tooltipHeight = 100 // 簡素化により大幅縮小
+    const tooltipHeight = 100
     const margin = 8
-    const cardWidth = 140 // カードの概算幅
-    const cardHeight = 190 // カードの概算高さ
+    const cardWidth = 140
+    const cardHeight = 190
     
-    // カードの境界を計算（positionはカード中央）
-    const cardLeft = position.x - cardWidth / 2
-    const cardRight = position.x + cardWidth / 2
-    const cardTop = position.y - cardHeight / 2
-    const cardBottom = position.y + cardHeight / 2
+    // position座標系を修正: ページ座標 → ビューポート座標変換
+    const viewportX = position.x
+    const viewportY = position.y - window.scrollY // ビューポート座標に変換
+    
+    // カードの境界を計算（ビューポート座標）
+    const cardLeft = viewportX - cardWidth / 2
+    const cardRight = viewportX + cardWidth / 2
+    const cardTop = viewportY - cardHeight / 2
     
     // 配置候補: 右上 → 右下 → 左上 → 左下
     const candidates = [
       {
         // 右上
         left: cardRight + margin,
-        top: cardTop,
+        top: position.y - cardHeight / 2, // ページ座標で返す
         transform: 'translateY(0)',
         placement: 'right-top'
       },
       {
         // 右下  
         left: cardRight + margin,
-        top: cardBottom - tooltipHeight,
+        top: position.y + cardHeight / 2 - tooltipHeight, // ページ座標で返す
         transform: 'translateY(0)',
         placement: 'right-bottom'
       },
       {
         // 左上
         left: cardLeft - tooltipWidth - margin,
-        top: cardTop,
+        top: position.y - cardHeight / 2, // ページ座標で返す
         transform: 'translateY(0)',
         placement: 'left-top'
       },
       {
         // 左下
         left: cardLeft - tooltipWidth - margin,
-        top: cardBottom - tooltipHeight,
+        top: position.y + cardHeight / 2 - tooltipHeight, // ページ座標で返す
         transform: 'translateY(0)',
         placement: 'left-bottom'
       }
     ]
     
-    // 画面内に収まる最初の候補を選択
+    // 画面内判定（ビューポート座標で判定）
     for (const candidate of candidates) {
+      const candidateViewportY = candidate.top - window.scrollY
+      
       const withinBounds = 
         candidate.left >= margin &&
         candidate.left + tooltipWidth <= window.innerWidth - margin &&
-        candidate.top >= margin &&
-        candidate.top + tooltipHeight <= window.innerHeight - margin
+        candidateViewportY >= margin &&
+        candidateViewportY + tooltipHeight <= window.innerHeight - margin
         
       if (withinBounds) {
         return candidate
       }
     }
     
-    // すべて画面外の場合は右上を強制選択し、画面内に調整
+    // すべて画面外の場合は右上を強制選択し、ビューポート内に調整
+    const fallbackViewportTop = Math.min(Math.max(cardTop, margin), window.innerHeight - tooltipHeight - margin)
     return {
       left: Math.min(Math.max(cardRight + margin, margin), window.innerWidth - tooltipWidth - margin),
-      top: Math.min(Math.max(cardTop, margin), window.innerHeight - tooltipHeight - margin),
+      top: fallbackViewportTop + window.scrollY, // ページ座標に戻す
       transform: 'translateY(0)',
       placement: 'right-top-adjusted'
     }
