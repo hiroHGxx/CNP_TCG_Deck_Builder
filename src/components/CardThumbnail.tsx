@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
+import CardTooltip from './CardTooltip'
 import type { Card } from '@/types/card'
 
 interface CardThumbnailProps {
@@ -16,6 +17,10 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
+  const [showTooltip, setShowTooltip] = useState(false)
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
+  const [touchTimeout, setTouchTimeout] = useState<number | null>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
 
   const handleClick = () => {
     if (onClick) {
@@ -32,6 +37,52 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
   const handleImageError = () => {
     setImageError(true)
     setImageLoading(false)
+  }
+
+  const handleMouseEnter = () => {
+    const rect = cardRef.current?.getBoundingClientRect()
+    if (rect) {
+      setTooltipPosition({
+        x: rect.left + rect.width / 2,
+        y: rect.top
+      })
+      setShowTooltip(true)
+    }
+  }
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false)
+  }
+
+  // モバイル対応: ロングタップでツールチップ表示
+  const handleTouchStart = () => {
+    const rect = cardRef.current?.getBoundingClientRect()
+    if (rect) {
+      const timeout = setTimeout(() => {
+        setTooltipPosition({
+          x: rect.left + rect.width / 2,
+          y: rect.top
+        })
+        setShowTooltip(true)
+      }, 500) // 500ms長押しでツールチップ表示
+      
+      setTouchTimeout(timeout)
+    }
+  }
+
+  const handleTouchEnd = () => {
+    if (touchTimeout) {
+      clearTimeout(touchTimeout)
+      setTouchTimeout(null)
+    }
+  }
+
+  const handleTouchMove = () => {
+    if (touchTimeout) {
+      clearTimeout(touchTimeout)
+      setTouchTimeout(null)
+    }
+    setShowTooltip(false)
   }
 
   const getRarityColor = (rarity: string) => {
@@ -56,11 +107,35 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
     }
   }
 
+  // コスト表示のためのヘルパー関数
+  const parseCostDisplay = () => {
+    // colorBalance から色コストを抽出 (例: "緑4" -> 4)
+    const colorBalance = card.colorBalance || ''
+    const colorCostMatch = colorBalance.match(/(\d+)/)
+    const colorCost = colorCostMatch ? parseInt(colorCostMatch[1]) : 0
+    
+    // 無色コスト = 総コスト - 色コスト
+    const colorlessCost = Math.max(0, card.cost - colorCost)
+    
+    return {
+      colorCost,
+      colorlessCost,
+      totalCost: card.cost
+    }
+  }
+
   return (
-    <div 
-      className="card-thumbnail relative group"
-      onClick={handleClick}
-    >
+    <>
+      <div 
+        ref={cardRef}
+        className="card-thumbnail relative group"
+        onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchMove}
+      >
       {/* カード画像 */}
       <div className="relative aspect-[3/4] bg-gray-100 rounded-t-lg overflow-hidden">
         {imageLoading && (
@@ -102,14 +177,41 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
 
       {/* カード情報 */}
       <div className="p-2 space-y-1">
-        {/* 名前とコスト */}
-        <div className="flex items-start justify-between">
-          <h3 className="text-sm font-semibold text-gray-900 leading-tight flex-1 pr-1">
+        {/* 名前 */}
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900 leading-tight">
             {card.name}
           </h3>
-          <div className="flex items-center space-x-1 flex-shrink-0">
-            <div className={`w-2 h-2 rounded-full ${getColorDot(card.color)}`} />
-            <span className="text-sm font-bold text-gray-700">{card.cost}</span>
+        </div>
+
+        {/* コスト表示（案1: アイコン分離表示） */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-0.5">
+            {(() => {
+              const { colorCost, colorlessCost, totalCost } = parseCostDisplay()
+              return (
+                <>
+                  {/* 色コスト */}
+                  {Array.from({ length: colorCost }).map((_, index) => (
+                    <div
+                      key={`color-${index}`}
+                      className={`w-2 h-2 rounded-full ${getColorDot(card.color)}`}
+                    />
+                  ))}
+                  {/* 無色コスト */}
+                  {Array.from({ length: colorlessCost }).map((_, index) => (
+                    <div
+                      key={`colorless-${index}`}
+                      className="w-2 h-2 rounded-full bg-gray-400"
+                    />
+                  ))}
+                  {/* 総コスト表示 */}
+                  <span className="text-xs font-semibold text-gray-600 ml-1">
+                    ({totalCost})
+                  </span>
+                </>
+              )
+            })()}
           </div>
         </div>
 
@@ -130,7 +232,15 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
           </span>
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* ツールチップ */}
+      <CardTooltip
+        card={card}
+        visible={showTooltip}
+        position={tooltipPosition}
+      />
+    </>
   )
 }
 
