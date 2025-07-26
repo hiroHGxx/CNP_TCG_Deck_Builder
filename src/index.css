@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  .card-thumbnail {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden transition-all duration-200 hover:shadow-md hover:scale-105 cursor-pointer;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-900 px-4 py-2 rounded-md font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors;
+  }
+  
+  .filter-button {
+    @apply px-3 py-1 rounded-full text-sm font-medium border transition-colors;
+  }
+  
+  .filter-button-active {
+    @apply bg-blue-100 text-blue-800 border-blue-300;
+  }
+  
+  .filter-button-inactive {
+    @apply bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200;
+  }
+}
+
+/* カード色のユーティリティクラス */
+.color-red { @apply text-red-600 bg-red-50; }
+.color-blue { @apply text-blue-600 bg-blue-50; }
+.color-green { @apply text-green-600 bg-green-50; }
+.color-yellow { @apply text-yellow-600 bg-yellow-50; }
+.color-colorless { @apply text-gray-600 bg-gray-50; }
+
+/* レアリティバッジ */
+.rarity-common { @apply bg-gray-100 text-gray-800; }
+.rarity-rare { @apply bg-blue-100 text-blue-800; }
+.rarity-rare_rare { @apply bg-purple-100 text-purple-800; }
+.rarity-super_rare { @apply bg-yellow-100 text-yellow-800; }
+.rarity-ultra_rare { @apply bg-red-100 text-red-800; }
