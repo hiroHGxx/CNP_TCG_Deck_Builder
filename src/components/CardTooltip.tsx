@@ -5,9 +5,10 @@ interface CardTooltipProps {
   card: Card
   visible: boolean
   position: { x: number; y: number }
+  placement?: 'top' | 'bottom' | 'auto'
 }
 
-const CardTooltip: React.FC<CardTooltipProps> = ({ card, visible, position }) => {
+const CardTooltip: React.FC<CardTooltipProps> = ({ card, visible, position, placement = 'auto' }) => {
   if (!visible) return null
 
   const getColorDot = (color: string) => {
@@ -30,19 +31,61 @@ const CardTooltip: React.FC<CardTooltipProps> = ({ card, visible, position }) =>
     return { colorCost, colorlessCost, totalCost: card.cost }
   }
 
-  // 画面端での位置調整
-  const adjustedPosition = {
-    left: Math.min(position.x, window.innerWidth - 320), // ツールチップ幅320pxを考慮
-    top: position.y - 10
+  // 動的位置調整の計算
+  const calculatePosition = () => {
+    const tooltipWidth = 320
+    const margin = 10
+    
+    let finalPlacement = placement
+    
+    // 自動配置の場合、画面位置に基づいて決定
+    if (placement === 'auto') {
+      const screenHeight = window.innerHeight
+      const isUpperHalf = position.y < screenHeight / 2
+      finalPlacement = isUpperHalf ? 'bottom' : 'top'
+    }
+    
+    // 左右位置の調整
+    let left = position.x - tooltipWidth / 2 // 中央配置
+    if (left < margin) {
+      left = margin // 左端調整
+    } else if (left + tooltipWidth + margin > window.innerWidth) {
+      left = window.innerWidth - tooltipWidth - margin // 右端調整
+    }
+    
+    // 上下位置の調整
+    let top: number
+    let transform: string
+    
+    if (finalPlacement === 'bottom') {
+      // カードの下に表示
+      top = position.y + margin
+      transform = 'translateY(0)'
+    } else {
+      // カードの上に表示
+      top = position.y - margin
+      transform = 'translateY(-100%)'
+    }
+    
+    return {
+      left,
+      top,
+      transform,
+      placement: finalPlacement
+    }
   }
+
+  const { left, top, transform, placement: finalPlacement } = calculatePosition()
 
   return (
     <div 
-      className="fixed z-50 bg-white border-2 border-gray-300 rounded-lg shadow-xl p-4 w-80 pointer-events-none"
+      className={`fixed z-50 bg-white border-2 border-gray-300 rounded-lg shadow-xl p-4 w-80 pointer-events-none ${
+        finalPlacement === 'bottom' ? 'animate-slide-in-down' : 'animate-slide-in-up'
+      }`}
       style={{
-        left: `${adjustedPosition.left}px`,
-        top: `${adjustedPosition.top}px`,
-        transform: 'translateY(-100%)', // カーソルの上に表示
+        left: `${left}px`,
+        top: `${top}px`,
+        transform,
       }}
     >
       {/* カード名 */}
