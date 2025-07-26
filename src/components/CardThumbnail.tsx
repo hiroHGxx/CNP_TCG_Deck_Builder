@@ -42,10 +42,11 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
   const handleMouseEnter = () => {
     const rect = cardRef.current?.getBoundingClientRect()
     if (rect) {
-      setTooltipPosition({
+      const position = {
         x: rect.left + rect.width / 2, // カード中央のX座標
         y: rect.top + window.scrollY    // スクロール位置を考慮したY座標
-      })
+      }
+      setTooltipPosition(position)
       setShowTooltip(true)
     }
   }
