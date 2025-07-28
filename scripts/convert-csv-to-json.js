@@ -88,6 +88,7 @@ function parseCSVData(csvData) {
       cost: rowData.cost === '-' ? 0 : parseInt(rowData.cost) || 0,
       color: colorMap[rowData.color] || rowData.color,
       bp: rowData.bp === '-' ? null : parseInt(rowData.bp) || null,
+      supportBP: rowData.assist === '-' ? null : parseInt(rowData.assist) || null, // 助太刀BP追加
       role: rowData.trait && rowData.trait !== '-' ? rowData.trait.split('/').map(r => r.trim()) : [],
       effect: rowData.effect || '',
       flavorText: rowData.flavor || '',
