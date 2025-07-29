@@ -254,7 +254,7 @@
     "cost": 6,
     "color": "green",
     "bp": 5000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "セイドウ",
       "ユウギリ"
@@ -275,7 +275,7 @@
     "cost": 6,
     "color": "green",
     "bp": 7000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "メテオラス",
       "アニマル"
@@ -296,7 +296,7 @@
     "cost": 6,
     "color": "green",
     "bp": 6000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "ヤーマ",
       "CNP"
@@ -317,7 +317,7 @@
     "cost": 6,
     "color": "green",
     "bp": 6000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "オロチ",
       "CNP"
@@ -338,7 +338,7 @@
     "cost": 5,
     "color": "green",
     "bp": 6000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "メテオラス",
       "アニマル"
@@ -359,7 +359,7 @@
     "cost": 4,
     "color": "green",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "メテオラス",
       "ウッドレイス"
@@ -380,7 +380,7 @@
     "cost": 4,
     "color": "green",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "セイドウ",
       "式神"
@@ -401,7 +401,7 @@
     "cost": 3,
     "color": "green",
     "bp": 1000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "メテオラス",
       "フェアリー"
@@ -422,7 +422,7 @@
     "cost": 3,
     "color": "green",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "メテオラス",
       "フェアリー"
@@ -443,7 +443,7 @@
     "cost": 3,
     "color": "green",
     "bp": 3000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "セイドウ",
       "式神"
@@ -464,7 +464,7 @@
     "cost": 3,
     "color": "green",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "メテオラス",
       "ウッドレイス"
@@ -506,7 +506,7 @@
     "cost": 3,
     "color": "green",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "メテオラス",
       "エルフ"
@@ -527,7 +527,7 @@
     "cost": 2,
     "color": "green",
     "bp": 3000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "ヤーマ",
       "CNP"
@@ -548,7 +548,7 @@
     "cost": 2,
     "color": "green",
     "bp": 2000,
-    "supportBP": null,
+    "supportBP": 2000,
     "role": [
       "オロチ",
       "CNP"
@@ -778,7 +778,7 @@
     "cost": 6,
     "color": "yellow",
     "bp": 6000,
-    "supportBP": null,
+    "supportBP": 2000,
     "role": [
       "セツナ",
       "CNP"
@@ -821,7 +821,7 @@
     "cost": 5,
     "color": "yellow",
     "bp": 5000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "セイドウ",
       "テンシュ"
@@ -842,7 +842,7 @@
     "cost": 5,
     "color": "yellow",
     "bp": 5000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "ミッドガン",
       "トゥルーリア学派",
@@ -864,7 +864,7 @@
     "cost": 5,
     "color": "yellow",
     "bp": 6000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "ミッドガン",
       "機械",
@@ -886,7 +886,7 @@
     "cost": 5,
     "color": "yellow",
     "bp": 6000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "ミッドガン",
       "トゥルーリア学派",
@@ -908,7 +908,7 @@
     "cost": 4,
     "color": "yellow",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "セイドウ",
       "式神"
@@ -929,7 +929,7 @@
     "cost": 4,
     "color": "yellow",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "トワ",
       "CNP"
@@ -950,7 +950,7 @@
     "cost": 4,
     "color": "yellow",
     "bp": 5000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "ミッドガン",
       "機械",
@@ -972,7 +972,7 @@
     "cost": 4,
     "color": "yellow",
     "bp": 5000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "ミッドガン",
       "人間",
@@ -994,7 +994,7 @@
     "cost": 3,
     "color": "yellow",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "ミッドガン",
       "人間"
@@ -1015,7 +1015,7 @@
     "cost": 3,
     "color": "yellow",
     "bp": 3000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "セツナ",
       "CNP"
@@ -1036,7 +1036,7 @@
     "cost": 3,
     "color": "yellow",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "ミッドガン",
       "反学派",
@@ -1080,7 +1080,7 @@
     "cost": 3,
     "color": "yellow",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "ミッドガン",
       "トゥルーリア学派",
@@ -1144,7 +1144,7 @@
     "cost": 2,
     "color": "yellow",
     "bp": 2000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "セイドウ",
       "式神"
@@ -1372,7 +1372,7 @@
     "cost": 7,
     "color": "red",
     "bp": 7000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "カグツチ",
       "ゴーレム"
@@ -1393,7 +1393,7 @@
     "cost": 7,
     "color": "red",
     "bp": 6000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "セイドウ",
       "カゲロウ"
@@ -1414,7 +1414,7 @@
     "cost": 6,
     "color": "red",
     "bp": 5000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "セイドウ",
       "式神"
@@ -1456,7 +1456,7 @@
     "cost": 4,
     "color": "red",
     "bp": 5000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "カグツチ",
       "ドラゴン"
@@ -1477,7 +1477,7 @@
     "cost": 4,
     "color": "red",
     "bp": 5000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "カグツチ",
       "ゴーレム"
@@ -1498,7 +1498,7 @@
     "cost": 4,
     "color": "red",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "カグツチ",
       "竜人"
@@ -1519,7 +1519,7 @@
     "cost": 4,
     "color": "red",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 2000,
     "role": [
       "ナルカミ",
       "CNP"
@@ -1561,7 +1561,7 @@
     "cost": 3,
     "color": "red",
     "bp": 2000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "ナルカミ",
       "CNP"
@@ -1582,7 +1582,7 @@
     "cost": 3,
     "color": "red",
     "bp": 3000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "セイドウ",
       "式神"
@@ -1603,7 +1603,7 @@
     "cost": 3,
     "color": "red",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "カグツチ",
       "サラマンダー"
@@ -1624,7 +1624,7 @@
     "cost": 3,
     "color": "red",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "カグツチ",
       "オーガ"
@@ -1666,7 +1666,7 @@
     "cost": 2,
     "color": "red",
     "bp": 3000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "マカミ",
       "CNP"
@@ -1687,7 +1687,7 @@
     "cost": 2,
     "color": "red",
     "bp": 2000,
-    "supportBP": 1000,
+    "supportBP": 2000,
     "role": [
       "ナルカミ",
       "CNP"
@@ -1708,7 +1708,7 @@
     "cost": 1,
     "color": "red",
     "bp": 2000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "カグツチ",
       "ドワーフ"
@@ -1729,7 +1729,7 @@
     "cost": 1,
     "color": "red",
     "bp": 2000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "カグツチ",
       "サンドワーム"
@@ -1999,7 +1999,7 @@
     "cost": 6,
     "color": "blue",
     "bp": 7000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "リーリー",
       "CNP"
@@ -2020,7 +2020,7 @@
     "cost": 5,
     "color": "blue",
     "bp": 5000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "アクアノーヴァ",
       "アクアペンギン",
@@ -2042,7 +2042,7 @@
     "cost": 4,
     "color": "blue",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 2000,
     "role": [
       "リーリー",
       "CNP"
@@ -2063,7 +2063,7 @@
     "cost": 4,
     "color": "blue",
     "bp": 3000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "ルナ",
       "CNP"
@@ -2084,7 +2084,7 @@
     "cost": 4,
     "color": "blue",
     "bp": 5000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "アクアノーヴァ",
       "アクアペンギン"
@@ -2125,7 +2125,7 @@
     "cost": 3,
     "color": "blue",
     "bp": 2000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "セイドウ",
       "ミカヅキ"
@@ -2146,7 +2146,7 @@
     "cost": 3,
     "color": "blue",
     "bp": 2000,
-    "supportBP": 2000,
+    "supportBP": 1000,
     "role": [
       "セイドウ",
       "式神"
@@ -2167,7 +2167,7 @@
     "cost": 3,
     "color": "blue",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "アクアノーヴァ",
       "魚人"
@@ -2188,7 +2188,7 @@
     "cost": 3,
     "color": "blue",
     "bp": 4000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "アクアノーヴァ",
       "海賊"
@@ -2230,7 +2230,7 @@
     "cost": 2,
     "color": "blue",
     "bp": 3000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "ルナ",
       "CNP"
@@ -2251,7 +2251,7 @@
     "cost": 2,
     "color": "blue",
     "bp": 2000,
-    "supportBP": 1000,
+    "supportBP": 2000,
     "role": [
       "リーリー",
       "CNP"
@@ -2293,7 +2293,7 @@
     "cost": 2,
     "color": "blue",
     "bp": 2000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "セイドウ",
       "式神"
@@ -2314,7 +2314,7 @@
     "cost": 2,
     "color": "blue",
     "bp": 2000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "セイドウ",
       "式神"
@@ -2335,7 +2335,7 @@
     "cost": 2,
     "color": "blue",
     "bp": 2000,
-    "supportBP": null,
+    "supportBP": 1000,
     "role": [
       "アクアノーヴァ",
       "アニマル"

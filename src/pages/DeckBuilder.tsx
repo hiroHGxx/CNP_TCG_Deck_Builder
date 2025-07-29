@@ -256,7 +256,7 @@ const DeckBuilder: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span>助太刀対応:</span>
-                  <span className="font-medium">{cards.filter(c => c.supportBP !== null && c.supportBP > 0).length}種類</span>
+                  <span className="font-medium">{Object.keys(currentDeck.cards).filter(cardId => cards.find(c => c.cardId === cardId && c.supportBP !== null && c.supportBP > 0)).length}種類</span>
                 </div>
                 <div className="flex justify-between">
                   <span>完成度:</span>
