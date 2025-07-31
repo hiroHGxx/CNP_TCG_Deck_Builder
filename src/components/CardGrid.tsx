@@ -5,19 +5,21 @@ import type { Card } from '@/types/card'
 interface CardGridProps {
   cards: Card[]
   onCardAdd?: (cardId: string) => void
+  onCardRemove?: (cardId: string) => void
   onCardClick?: (card: Card) => void
   loading?: boolean
 }
 
 const CardGrid: React.FC<CardGridProps> = ({ 
   cards, 
-  onCardAdd, 
+  onCardAdd,
+  onCardRemove, 
   onCardClick, 
   loading = false 
 }) => {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
         {Array.from({ length: 12 }).map((_, index) => (
           <div key={index} className="animate-pulse">
             <div className="bg-gray-200 aspect-[3/4] rounded-t-lg"></div>
@@ -49,12 +51,13 @@ const CardGrid: React.FC<CardGridProps> = ({
       </div>
 
       {/* カードグリッド */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
         {cards.map((card) => (
           <CardThumbnail
             key={card.cardId}
             card={card}
             onAdd={onCardAdd}
+            onRemove={onCardRemove}
             onClick={onCardClick}
           />
         ))}

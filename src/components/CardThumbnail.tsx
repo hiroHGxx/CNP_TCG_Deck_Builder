@@ -1,17 +1,21 @@
 import React, { useState, useRef } from 'react'
+import { Plus, Minus } from 'lucide-react'
 import CardTooltip from './CardTooltip'
+import { useDeckStore } from '@/stores/deckStore'
 import type { Card } from '@/types/card'
 
 interface CardThumbnailProps {
   card: Card
   onAdd?: (cardId: string) => void
+  onRemove?: (cardId: string) => void
   onClick?: (card: Card) => void
   showCount?: number
 }
 
 const CardThumbnail: React.FC<CardThumbnailProps> = ({ 
   card, 
-  onAdd, 
+  onAdd,
+  onRemove, 
   onClick, 
   showCount 
 }) => {
@@ -21,13 +25,15 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
   const [touchTimeout, setTouchTimeout] = useState<number | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
+  
+  // デッキストアから現在のカード枚数を取得
+  const { currentDeck, addCardToDeck, removeCardFromDeck } = useDeckStore()
+  const cardCountInDeck = currentDeck.cards[card.cardId] || 0
+  const isInDeck = cardCountInDeck > 0
+  const canAddMore = cardCountInDeck < 4 // 4枚制限チェック
 
-  const handleClick = () => {
-    if (onClick) {
-      onClick(card)
-    } else if (onAdd) {
-      onAdd(card.cardId)
-    }
+  const handleClick = (e: React.MouseEvent) => {
+    // カード全体クリック機能は無効化済み（+/-ボタンのみ使用）
   }
 
   const handleImageLoad = () => {
@@ -130,7 +136,7 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
       <div 
         ref={cardRef}
         className="card-thumbnail relative group"
-        onClick={handleClick}
+        style={{ cursor: 'default' }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onTouchStart={handleTouchStart}
@@ -165,22 +171,86 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
           </div>
         )}
 
-        {/* 枚数表示 */}
-        {showCount && showCount > 0 && (
-          <div className="absolute top-1 right-1 bg-blue-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+        {/* 枚数バッジ（デッキ内カード枚数） */}
+        {cardCountInDeck > 0 && (
+          <div className="absolute top-1 right-1 bg-blue-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
+            {cardCountInDeck}
+          </div>
+        )}
+
+        {/* showCount prop（既存の表示） */}
+        {showCount && showCount > 0 && !cardCountInDeck && (
+          <div className="absolute top-1 right-1 bg-gray-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
             {showCount}
           </div>
         )}
 
-        {/* ホバー効果 */}
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200" />
+        {/* +ボタン（4枚未満の場合のみ表示） */}
+        {canAddMore && (
+          <div className="absolute bottom-1 right-1">
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (onAdd) {
+                  onAdd(card.cardId)
+                } else {
+                  addCardToDeck(card)
+                }
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              className="bg-green-600 hover:bg-green-700 text-white p-3 rounded-full shadow-lg transform hover:scale-110 transition-all duration-200"
+              title={`${card.name}をデッキに追加`}
+              style={{ zIndex: 1000, cursor: 'pointer' }}
+            >
+              <Plus className="h-5 w-5" />
+            </button>
+          </div>
+        )}
+        
+        {/* -ボタン（デッキ内カードのみ表示） */}
+        {isInDeck && (
+          <div className="absolute bottom-1 left-1">
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (onRemove) {
+                  onRemove(card.cardId)
+                } else {
+                  removeCardFromDeck(card.cardId)
+                }
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-full shadow-lg transform hover:scale-110 transition-all duration-200"
+              title={`${card.name}をデッキから削除`}
+              style={{ zIndex: 1000, cursor: 'pointer' }}
+            >
+              <Minus className="h-5 w-5" />
+            </button>
+          </div>
+        )}
+
+        {/* ホバー効果（ボタンより下層に配置） */}
+        <div 
+          className={`absolute inset-0 transition-all duration-200 ${
+            isInDeck 
+              ? 'bg-blue-500 bg-opacity-0 group-hover:bg-opacity-15 border-2 border-blue-400 border-opacity-30' 
+              : 'bg-black bg-opacity-0 group-hover:bg-opacity-10'
+          }`}
+          style={{ zIndex: 1, pointerEvents: 'none' }}
+        />
       </div>
 
       {/* カード情報 */}
-      <div className="p-2 space-y-1">
+      <div className={`p-2 space-y-1 transition-colors duration-200 ${
+        isInDeck ? 'bg-blue-50 border-l-2 border-blue-400' : 'bg-white'
+      }`}>
         {/* 名前 */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 leading-tight">
+          <h3 className={`text-sm font-semibold leading-tight ${
+            isInDeck ? 'text-blue-900' : 'text-gray-900'
+          }`}>
             {card.name}
           </h3>
         </div>
