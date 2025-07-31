@@ -74,8 +74,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     { value: 'red', label: '赤', bgColor: 'bg-red-500' },
     { value: 'blue', label: '青', bgColor: 'bg-blue-500' },
     { value: 'green', label: '緑', bgColor: 'bg-green-500' },
-    { value: 'yellow', label: '黄', bgColor: 'bg-yellow-500' },
-    { value: 'colorless', label: '無色', bgColor: 'bg-gray-400' }
+    { value: 'yellow', label: '黄', bgColor: 'bg-yellow-500' }
   ]
 
   const cardTypeOptions: { value: CardType; label: string }[] = [
@@ -88,8 +87,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     { value: 'common', label: 'コモン' },
     { value: 'rare', label: 'レア' },
     { value: 'rare_rare', label: 'ダブルレア' },
-    { value: 'triple_rare', label: 'トリプルレア' },
-    { value: 'super_rare', label: 'スーパーレア' }
+    { value: 'triple_rare', label: 'トリプルレア' }
   ]
 
   return (

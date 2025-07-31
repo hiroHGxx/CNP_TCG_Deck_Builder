@@ -144,12 +144,14 @@ export const ReikiManager: React.FC<ReikiManagerProps> = ({ allCards = [] }) => 
             メインデッキ色分布
           </h4>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            {Object.entries(mainColorDistribution).map(([color, count]) => (
-              <div key={color} className="flex justify-between">
-                <span className="capitalize">{color}:</span>
-                <span>{count}枚</span>
-              </div>
-            ))}
+            {Object.entries(mainColorDistribution)
+              .filter(([color]) => color !== 'colorless')
+              .map(([color, count]) => (
+                <div key={color} className="flex justify-between">
+                  <span className="capitalize">{color}:</span>
+                  <span>{count}枚</span>
+                </div>
+              ))}
           </div>
           
           {validation.suggestions.length > 0 && (

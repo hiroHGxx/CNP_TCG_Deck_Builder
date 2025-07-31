@@ -186,13 +186,21 @@ export const calculateColorStats = (mainCards: Record<string, number>, allCards:
     const card = cardMap.get(cardId);
     if (card && card.color) {
       const color = card.color as keyof ColorDistribution;
-      if (color in distribution) {
+      // colorlessは除外してレイキに関連する4色のみを集計
+      if (color in distribution && color !== 'colorless') {
         distribution[color] += count;
       }
     }
   });
   
-  return distribution;
+  // colorlessを除外した結果を返す（colorless: 0を含む完全なColorDistribution）
+  return {
+    red: distribution.red,
+    blue: distribution.blue,
+    green: distribution.green,
+    yellow: distribution.yellow,
+    colorless: 0 // 常に0（レイキでは使用しない）
+  };
 };
 
 /**
