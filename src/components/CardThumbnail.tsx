@@ -27,10 +27,11 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
   const cardRef = useRef<HTMLDivElement>(null)
   
   // デッキストアから現在のカード枚数を取得
-  const { currentDeck, addCardToDeck, removeCardFromDeck } = useDeckStore()
+  const { currentDeck, addCardToDeck, removeCardFromDeck, getTotalCardCount } = useDeckStore()
   const cardCountInDeck = currentDeck.cards[card.cardId] || 0
   const isInDeck = cardCountInDeck > 0
-  const canAddMore = cardCountInDeck < 4 // 4枚制限チェック
+  const totalCards = getTotalCardCount()
+  const canAddMore = cardCountInDeck < 4 && totalCards < 50 // 4枚制限 + 50枚制限チェック
 
   const handleClick = (e: React.MouseEvent) => {
     // カード全体クリック機能は無効化済み（+/-ボタンのみ使用）
@@ -200,7 +201,13 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
               }}
               onMouseDown={(e) => e.stopPropagation()}
               className="bg-green-600 hover:bg-green-700 text-white p-3 rounded-full shadow-lg transform hover:scale-110 transition-all duration-200"
-              title={`${card.name}をデッキに追加`}
+              title={
+                cardCountInDeck >= 4 
+                  ? `${card.name}は4枚制限に達しています`
+                  : totalCards >= 50 
+                    ? `デッキは50枚制限に達しています`
+                    : `${card.name}をデッキに追加`
+              }
               style={{ zIndex: 1000, cursor: 'pointer' }}
             >
               <Plus className="h-5 w-5" />

@@ -48,11 +48,6 @@ const DeckBuilderIntegrated: React.FC = () => {
     // カードの操作は+/-ボタンのみに限定
   }
 
-  const handleSaveDeck = () => {
-    const deckId = saveDeck()
-    alert(`デッキを保存しました (ID: ${deckId})`)
-  }
-
   if (error) {
     return (
       <div className="space-y-6 p-6">
@@ -154,8 +149,6 @@ const DeckBuilderIntegrated: React.FC = () => {
   const rightColumn = (
     <DeckSidebar 
       cards={cards}
-      onSaveDeck={handleSaveDeck}
-      onClearDeck={clearDeck}
     />
   )
 
