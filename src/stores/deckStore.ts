@@ -9,8 +9,11 @@ interface DeckStore {
   // 現在編集中のデッキ
   currentDeck: CurrentDeck
   
-  // 保存済みデッキ一覧
+  // 保存済みデッキ一覧（v2.0統合形式）
   savedDecks: Deck[]
+  
+  // v1.0互換用（廃止予定）
+  legacySavedDecks: any[]
   
   // v2.0: 全カードデータ（色分布計算用）
   allCards: Card[]
@@ -25,7 +28,17 @@ interface DeckStore {
   // v2.0: カードデータ設定
   setAllCards: (cards: Card[]) => void
   
-  // デッキ保存・読み込み
+  // v2.0: 統合デッキ保存・読み込み（メイン + レイキ一体管理）
+  saveIntegratedDeck: (reikiCards: ReikiCard[]) => string
+  loadIntegratedDeck: (deckId: string) => { success: boolean; reikiCards?: ReikiCard[] }
+  deleteIntegratedDeck: (deckId: string) => void
+  getIntegratedDecks: () => Deck[]
+  
+  // v1.0 → v2.0 移行サポート
+  migrateLegacyDecks: () => { migrated: number; errors: string[] }
+  hasLegacyDecks: () => boolean
+  
+  // v1.0互換（廃止予定）
   saveDeck: () => string // deckIdを返す
   loadDeck: (deckId: string) => void
   deleteDeck: (deckId: string) => void
@@ -121,6 +134,7 @@ export const useDeckStore = create<DeckStore>()(
         lastModified: new Date().toISOString()
       },
       savedDecks: [],
+      legacySavedDecks: [], // v1.0互換用
       allCards: [], // v2.0: 全カードデータ
       
       // カードをデッキに追加
@@ -130,6 +144,12 @@ export const useDeckStore = create<DeckStore>()(
         
         // 4枚制限チェック
         if (currentCount >= 4) {
+          return // 追加しない
+        }
+        
+        // 50枚制限チェック
+        const totalCards = Object.values(currentDeck.cards).reduce((sum, count) => sum + count, 0)
+        if (totalCards >= 50) {
           return // 追加しない
         }
         
@@ -175,7 +195,16 @@ export const useDeckStore = create<DeckStore>()(
         if (count <= 0) {
           delete newCards[cardId]
         } else if (count <= 4) {
-          newCards[cardId] = count
+          // 50枚制限チェック（新しい枚数での総数を計算）
+          const otherCardsTotal = Object.entries(currentDeck.cards)
+            .filter(([id]) => id !== cardId)
+            .reduce((sum, [, cardCount]) => sum + cardCount, 0)
+          const newTotalCards = otherCardsTotal + count
+          
+          if (newTotalCards <= 50) {
+            newCards[cardId] = count
+          }
+          // 50枚を超える場合は変更しない（現在の値を保持）
         }
         
         set({
@@ -304,12 +333,149 @@ export const useDeckStore = create<DeckStore>()(
       getSupportBPDistribution: () => {
         const { currentDeck, allCards } = get()
         return calculateSupportBPDistribution(currentDeck.cards, allCards)
+      },
+
+      // v2.0: 統合デッキ保存（メイン + レイキ一体管理）
+      saveIntegratedDeck: (reikiCards: ReikiCard[]) => {
+        const { currentDeck, savedDecks } = get()
+        const now = new Date().toISOString()
+        
+        // 同じ名前のデッキが既に存在するかチェック
+        const existingDeckIndex = savedDecks.findIndex(deck => deck.name === currentDeck.name)
+        
+        let deckId: string
+        let updatedDecks: Deck[]
+        
+        if (existingDeckIndex !== -1) {
+          // 既存のデッキを上書き
+          deckId = savedDecks[existingDeckIndex].deckId
+          const updatedDeck: Deck = {
+            ...savedDecks[existingDeckIndex],
+            name: currentDeck.name,
+            mainCards: { ...currentDeck.cards },
+            reikiCards: [...reikiCards],
+            updatedAt: now,
+            version: "2.0"
+          }
+          
+          updatedDecks = [...savedDecks]
+          updatedDecks[existingDeckIndex] = updatedDeck
+        } else {
+          // 新規デッキとして作成
+          deckId = `integrated_deck_${Date.now()}`
+          const newDeck: Deck = {
+            deckId,
+            name: currentDeck.name,
+            mainCards: { ...currentDeck.cards },
+            reikiCards: [...reikiCards],
+            createdAt: now,
+            updatedAt: now,
+            version: "2.0"
+          }
+          
+          updatedDecks = [...savedDecks, newDeck]
+        }
+        
+        set({ savedDecks: updatedDecks })
+        
+        return deckId
+      },
+      
+      // v2.0: 統合デッキ読み込み
+      loadIntegratedDeck: (deckId: string) => {
+        const { savedDecks } = get()
+        const deck = savedDecks.find(d => d.deckId === deckId)
+        
+        if (deck && deck.version === "2.0") {
+          set({
+            currentDeck: {
+              name: deck.name,
+              cards: { ...deck.mainCards },
+              lastModified: new Date().toISOString()
+            }
+          })
+          
+          return { 
+            success: true, 
+            reikiCards: deck.reikiCards 
+          }
+        }
+        
+        return { success: false }
+      },
+      
+      // v2.0: 統合デッキ削除
+      deleteIntegratedDeck: (deckId: string) => {
+        const { savedDecks } = get()
+        set({
+          savedDecks: savedDecks.filter(deck => deck.deckId !== deckId)
+        })
+      },
+      
+      // v2.0: 統合デッキ一覧取得
+      getIntegratedDecks: () => {
+        const { savedDecks } = get()
+        return savedDecks.filter(deck => deck.version === "2.0")
+      },
+      
+      // v1.0 → v2.0 移行機能
+      migrateLegacyDecks: () => {
+        const { legacySavedDecks, savedDecks } = get()
+        let migrated = 0
+        const errors: string[] = []
+        
+        if (!legacySavedDecks || legacySavedDecks.length === 0) {
+          return { migrated: 0, errors: [] }
+        }
+        
+        const newDecks: Deck[] = [...savedDecks]
+        
+        legacySavedDecks.forEach((legacyDeck: any) => {
+          try {
+            // v1.0 → v2.0 形式変換
+            const migratedDeck: Deck = {
+              deckId: `migrated_${legacyDeck.deckId || Date.now()}`,
+              name: legacyDeck.name || 'Migrated Deck',
+              mainCards: legacyDeck.cards || {}, // v1.0のcardsをmainCardsに
+              reikiCards: [ // デフォルトレイキデッキ（空）
+                { color: 'red', count: 0 },
+                { color: 'blue', count: 0 },
+                { color: 'green', count: 0 },
+                { color: 'yellow', count: 0 }
+              ],
+              createdAt: legacyDeck.createdAt || new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              version: "2.0"
+            }
+            
+            newDecks.push(migratedDeck)
+            migrated++
+          } catch (error) {
+            errors.push(`デッキ「${legacyDeck.name || 'Unknown'}」の移行中にエラーが発生しました`)
+          }
+        })
+        
+        if (migrated > 0) {
+          set({ 
+            savedDecks: newDecks,
+            legacySavedDecks: [] // 移行完了後はクリア
+          })
+        }
+        
+        return { migrated, errors }
+      },
+      
+      // v1.0デッキの存在チェック
+      hasLegacyDecks: () => {
+        const { legacySavedDecks } = get()
+        return legacySavedDecks && legacySavedDecks.length > 0
       }
     }),
     {
       name: 'deck-storage', // localStorageのキー名
       partialize: (state) => ({
-        savedDecks: state.savedDecks,
+        savedDecks: state.savedDecks, // v2.0統合デッキ
+        legacySavedDecks: state.legacySavedDecks, // v1.0互換
         currentDeck: state.currentDeck
       })
     }

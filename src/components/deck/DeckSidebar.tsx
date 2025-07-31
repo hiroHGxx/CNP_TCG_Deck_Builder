@@ -1,31 +1,38 @@
-import React, { useState } from 'react'
-import { Save, Trash2, Edit3, CheckCircle, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Save, Trash2, Edit3, CheckCircle, AlertCircle, ChevronDown, ChevronUp, FolderOpen, HardDrive } from 'lucide-react'
 import { useDeckStore } from '@/stores/deckStore'
 import { useReikiStore } from '@/stores/reikiStore'
 import { ReikiManager } from './ReikiManager'
 import { SupportBPStats } from './SupportBPStats'
+import IntegratedDeckManager from './IntegratedDeckManager'
+import IntegratedAnalysis from './IntegratedAnalysis'
 import type { Card } from '@/types/card'
 
 interface DeckSidebarProps {
   cards: Card[]
-  onSaveDeck: () => void
-  onClearDeck: () => void
 }
 
 /**
  * 統合デッキサイドバー
  * メインデッキ + レイキデッキ + 統計を一元管理
  */
-export const DeckSidebar: React.FC<DeckSidebarProps> = ({
-  cards,
-  onSaveDeck,
-  onClearDeck
-}) => {
-  const { currentDeck, setDeckName, getTotalCardCount, removeCardFromDeck, setCardCount, clearDeck: clearMainDeck } = useDeckStore()
+export const DeckSidebar: React.FC<DeckSidebarProps> = ({ cards }) => {
+  const { 
+    currentDeck, 
+    setDeckName, 
+    getTotalCardCount, 
+    removeCardFromDeck, 
+    setCardCount, 
+    clearDeck: clearMainDeck,
+    hasLegacyDecks,
+    migrateLegacyDecks
+  } = useDeckStore()
   const { getTotalCount: getReikiTotalCount } = useReikiStore()
   
   const [isEditingName, setIsEditingName] = useState(false)
   const [editName, setEditName] = useState(currentDeck.name)
+  const [showDeckManager, setShowDeckManager] = useState(false)
+  const [showMigrationAlert, setShowMigrationAlert] = useState(false)
   const [expandedSections, setExpandedSections] = useState({
     mainDeck: true,
     reikiDeck: true,
@@ -130,8 +137,53 @@ export const DeckSidebar: React.FC<DeckSidebarProps> = ({
     return colorClasses[color] || 'bg-gray-400'
   }
 
+  // v1.0デッキ移行チェック
+  useEffect(() => {
+    if (hasLegacyDecks()) {
+      setShowMigrationAlert(true)
+    }
+  }, [hasLegacyDecks])
+
+  const handleMigration = () => {
+    const result = migrateLegacyDecks()
+    if (result.migrated > 0) {
+      alert(`${result.migrated}個のv1.0デッキをv2.0形式に移行しました！`)
+    }
+    if (result.errors.length > 0) {
+      alert(`移行エラー: ${result.errors.join(', ')}`)
+    }
+    setShowMigrationAlert(false)
+  }
+
   return (
     <div className="space-y-4">
+      {/* v1.0デッキ移行アラート */}
+      {showMigrationAlert && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2 mb-2">
+            <HardDrive className="h-5 w-5 text-orange-600" />
+            <h3 className="font-semibold text-orange-800">デッキ形式の更新</h3>
+          </div>
+          <p className="text-sm text-orange-700 mb-3">
+            古い形式のデッキが見つかりました。新しい統合デッキ形式（v2.0）に移行しますか？
+          </p>
+          <div className="flex space-x-2">
+            <button
+              onClick={handleMigration}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-sm font-medium"
+            >
+              移行する
+            </button>
+            <button
+              onClick={() => setShowMigrationAlert(false)}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded text-sm font-medium"
+            >
+              後で
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* デッキ統計 */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
@@ -312,33 +364,13 @@ export const DeckSidebar: React.FC<DeckSidebarProps> = ({
         </div>
       </div>
 
-      {/* デッキ管理 */}
+      {/* デッキ名編集 */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-          <div className="flex items-center justify-between">
-            <h3 className="text-md font-semibold text-gray-900">デッキ管理</h3>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={onSaveDeck}
-                disabled={!isValidDeck}
-                className="flex items-center space-x-1 px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <Save className="w-4 h-4" />
-                <span>保存</span>
-              </button>
-              <button
-                onClick={onClearDeck}
-                className="flex items-center space-x-1 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>クリア</span>
-              </button>
-            </div>
-          </div>
+          <h3 className="text-md font-semibold text-gray-900">デッキ名</h3>
         </div>
         
         <div className="p-4">
-          {/* デッキ名編集 */}
           <div className="mb-4">
             {isEditingName ? (
               <div className="flex items-center space-x-2">
@@ -372,7 +404,6 @@ export const DeckSidebar: React.FC<DeckSidebarProps> = ({
               </div>
             )}
           </div>
-
         </div>
       </div>
 
@@ -500,6 +531,35 @@ export const DeckSidebar: React.FC<DeckSidebarProps> = ({
         {expandedSections.stats && (
           <div className="p-4">
             <SupportBPStats showDetails={true} />
+          </div>
+        )}
+      </div>
+
+      {/* 統合デッキ分析 */}
+      <IntegratedAnalysis cards={cards} />
+
+      {/* デッキ管理 */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div 
+          className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50 cursor-pointer hover:from-gray-100 hover:to-blue-100 transition-colors"
+          onClick={() => setShowDeckManager(!showDeckManager)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <FolderOpen className="h-5 w-5 text-blue-600" />
+              <h3 className="text-md font-semibold text-blue-900">デッキ管理</h3>
+            </div>
+            {showDeckManager ? (
+              <ChevronUp className="w-4 h-4 text-blue-500" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-blue-500" />
+            )}
+          </div>
+        </div>
+        
+        {showDeckManager && (
+          <div className="p-4">
+            <IntegratedDeckManager />
           </div>
         )}
       </div>
