@@ -9,11 +9,12 @@ import FilterPanel from '@/components/FilterPanel'
 import DeckList from '@/components/DeckList'
 import { ReikiManager } from '@/components/deck/ReikiManager'
 import { SupportBPStats } from '@/components/deck/SupportBPStats'
+import { SimpleError } from '@/components/common/ErrorBoundary'
 import { ChevronDown, ChevronUp, Layout, List, Sparkles, Target } from 'lucide-react'
 import type { Card } from '@/types/card'
 
 const DeckBuilder: React.FC = () => {
-  const { cards, loading, error, totalCount } = useCardDB()
+  const { cards, loading, error, totalCount, retry, canRetry } = useCardDB()
   const [showFilters, setShowFilters] = useState(false)
   const [viewMode, setViewMode] = useState<'cards' | 'deck' | 'reiki' | 'stats'>('cards')
   
@@ -60,12 +61,7 @@ const DeckBuilder: React.FC = () => {
     }
   }
 
-  const handleCardClick = (card: Card) => {
-    // カードクリックでデッキに追加
-    console.log('Adding card to deck:', card.cardId, card.name)
-    addCardToDeck(card)
-    console.log('Current deck after adding:', currentDeck.cards)
-  }
+  // カードクリック機能は無効化済み（+/-ボタンのみ使用）
 
   const handleCardAddDirect = (card: Card) => {
     addCardToDeck(card)
@@ -80,10 +76,10 @@ const DeckBuilder: React.FC = () => {
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-bold text-gray-900">Deck Builder</h1>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <h3 className="text-red-800 font-semibold mb-2">Error Loading Cards</h3>
-          <p className="text-red-600">{error}</p>
-        </div>
+        <SimpleError
+          error={`${error.userMessage}${error.suggestion ? ` ${error.suggestion}` : ''}`}
+          onRetry={canRetry ? retry : undefined}
+        />
       </div>
     )
   }
@@ -209,7 +205,6 @@ const DeckBuilder: React.FC = () => {
             <CardGrid
               cards={filteredCards}
               onCardAdd={handleCardAdd}
-              onCardClick={handleCardClick}
               loading={loading}
             />
           </div>

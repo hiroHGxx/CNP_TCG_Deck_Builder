@@ -82,9 +82,27 @@ export const validateDeck = (
     isValid: errors.length === 0,
     errors,
     warnings,
-    totalCards,
-    colorBalance,
-    costCurve
+    mainDeck: {
+      totalCards,
+      isValidCount: totalCards === 50,
+      cardLimitViolations: errors.filter(e => e.includes('4枚')),
+      colorBalance,
+      costCurve
+    },
+    reikiDeck: {
+      totalCards: 0,
+      isValidCount: true,
+      colorBalance: {
+        red: 0,
+        blue: 0,
+        green: 0,
+        yellow: 0
+      }
+    },
+    overall: {
+      colorAlignment: false,
+      suggestions: warnings
+    }
   }
 }
 

@@ -34,7 +34,7 @@ export const ReikiTest: React.FC = () => {
   const handleTestCase = (caseType: keyof typeof testCases) => {
     const colorDistribution = testCases[caseType]
     applySuggestion(colorDistribution)
-    setTestCase(caseType)
+    setTestCase(caseType as 'single' | 'dual' | 'multi' | 'colorless')
   }
   
   // 推奨取得
@@ -59,7 +59,7 @@ export const ReikiTest: React.FC = () => {
       <div className="space-y-3">
         <h4 className="text-sm font-medium text-gray-700">テストケース</h4>
         <div className="grid grid-cols-2 gap-2">
-          {Object.entries(testCases).map(([key, colors]) => {
+          {Object.entries(testCases).map(([key]) => {
             const label = {
               single: '赤単色',
               dual: '赤青2色',

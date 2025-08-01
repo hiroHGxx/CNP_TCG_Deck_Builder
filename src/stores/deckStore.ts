@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { calculateColorStats } from '@/utils/reikiCalculation'
 import { calculateSupportBPDistribution } from '@/utils/supportBPCalculation'
+import { validateDeckLogic } from './deckValidation'
+import { DeckMigration } from './deckMigration'
 import type { Card, CurrentDeck, Deck, DeckValidationResult, SupportBPDistribution } from '@/types/card'
 import type { ReikiCard, ColorDistribution } from '@/types/reiki'
 
@@ -58,71 +60,6 @@ interface DeckStore {
   getSupportBPDistribution: () => SupportBPDistribution
 }
 
-// バリデーションロジック
-const validateDeckLogic = (cards: Record<string, number>, allCards: Card[]): DeckValidationResult => {
-  const errors: string[] = []
-  const warnings: string[] = []
-  
-  // カード情報のマップを作成
-  const cardMap = new Map(allCards.map(card => [card.cardId, card]))
-  
-  // 総枚数チェック
-  const totalCards = Object.values(cards).reduce((sum, count) => sum + count, 0)
-  if (totalCards < 50) {
-    errors.push(`デッキは50枚である必要があります（現在: ${totalCards}枚、あと${50 - totalCards}枚必要）`)
-  } else if (totalCards > 50) {
-    errors.push(`デッキは50枚である必要があります（現在: ${totalCards}枚、${totalCards - 50}枚多い）`)
-  }
-  
-  // 4枚制限チェック
-  Object.entries(cards).forEach(([cardId, count]) => {
-    if (count > 4) {
-      const card = cardMap.get(cardId)
-      errors.push(`${card?.name || cardId}は4枚を超えて入れることはできません（現在: ${count}枚）`)
-    }
-  })
-  
-  // 色分布計算
-  const colorBalance: Record<string, number> = {}
-  Object.entries(cards).forEach(([cardId, count]) => {
-    const card = cardMap.get(cardId)
-    if (card) {
-      colorBalance[card.color] = (colorBalance[card.color] || 0) + count
-    }
-  })
-  
-  // コストカーブ計算
-  const costCurve: Record<number, number> = {}
-  Object.entries(cards).forEach(([cardId, count]) => {
-    const card = cardMap.get(cardId)
-    if (card) {
-      costCurve[card.cost] = (costCurve[card.cost] || 0) + count
-    }
-  })
-  
-  // 警告: 色が偏りすぎている場合
-  const totalNonColorless = Object.entries(colorBalance)
-    .filter(([color]) => color !== 'colorless')
-    .reduce((sum, [, count]) => sum + count, 0)
-  
-  Object.entries(colorBalance).forEach(([color, count]) => {
-    if (color !== 'colorless' && totalNonColorless > 0) {
-      const percentage = (count / totalNonColorless) * 100
-      if (percentage > 80) {
-        warnings.push(`${color}色のカードが多すぎる可能性があります（${percentage.toFixed(1)}%）`)
-      }
-    }
-  })
-  
-  return {
-    isValid: errors.length === 0,
-    errors,
-    warnings,
-    totalCards,
-    colorBalance,
-    costCurve
-  }
-}
 
 export const useDeckStore = create<DeckStore>()(
   persist(
@@ -253,9 +190,11 @@ export const useDeckStore = create<DeckStore>()(
         const newDeck: Deck = {
           deckId,
           name: currentDeck.name,
-          cards: { ...currentDeck.cards },
+          mainCards: { ...currentDeck.cards },
+          reikiCards: [],
           createdAt: now,
-          updatedAt: now
+          updatedAt: now,
+          version: "1.0"
         }
         
         set({
@@ -274,7 +213,7 @@ export const useDeckStore = create<DeckStore>()(
           set({
             currentDeck: {
               name: deck.name,
-              cards: { ...deck.cards },
+              cards: { ...deck.mainCards },
               lastModified: new Date().toISOString()
             }
           })
@@ -421,54 +360,22 @@ export const useDeckStore = create<DeckStore>()(
       // v1.0 → v2.0 移行機能
       migrateLegacyDecks: () => {
         const { legacySavedDecks, savedDecks } = get()
-        let migrated = 0
-        const errors: string[] = []
+        const result = DeckMigration.migrateLegacyDecks(legacySavedDecks, savedDecks)
         
-        if (!legacySavedDecks || legacySavedDecks.length === 0) {
-          return { migrated: 0, errors: [] }
-        }
-        
-        const newDecks: Deck[] = [...savedDecks]
-        
-        legacySavedDecks.forEach((legacyDeck: any) => {
-          try {
-            // v1.0 → v2.0 形式変換
-            const migratedDeck: Deck = {
-              deckId: `migrated_${legacyDeck.deckId || Date.now()}`,
-              name: legacyDeck.name || 'Migrated Deck',
-              mainCards: legacyDeck.cards || {}, // v1.0のcardsをmainCardsに
-              reikiCards: [ // デフォルトレイキデッキ（空）
-                { color: 'red', count: 0 },
-                { color: 'blue', count: 0 },
-                { color: 'green', count: 0 },
-                { color: 'yellow', count: 0 }
-              ],
-              createdAt: legacyDeck.createdAt || new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              version: "2.0"
-            }
-            
-            newDecks.push(migratedDeck)
-            migrated++
-          } catch (error) {
-            errors.push(`デッキ「${legacyDeck.name || 'Unknown'}」の移行中にエラーが発生しました`)
-          }
-        })
-        
-        if (migrated > 0) {
+        if (result.migrated > 0) {
           set({ 
-            savedDecks: newDecks,
+            savedDecks: result.newDecks,
             legacySavedDecks: [] // 移行完了後はクリア
           })
         }
         
-        return { migrated, errors }
+        return { migrated: result.migrated, errors: result.errors }
       },
       
       // v1.0デッキの存在チェック
       hasLegacyDecks: () => {
         const { legacySavedDecks } = get()
-        return legacySavedDecks && legacySavedDecks.length > 0
+        return DeckMigration.hasLegacyDecks(legacySavedDecks)
       }
     }),
     {

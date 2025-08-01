@@ -6,7 +6,6 @@ import {
   generateReikiSuggestion 
 } from '@/utils/reikiCalculation'
 import type { 
-  ReikiCard, 
   ReikiColor, 
   ColorDistribution, 
   ReikiState

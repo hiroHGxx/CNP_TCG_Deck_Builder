@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp, TrendingUp, AlertTriangle, CheckCircle, Target,
 import { useDeckStore } from '@/stores/deckStore'
 import { useReikiStore } from '@/stores/reikiStore'
 import { analyzeIntegratedDeck } from '@/utils/integratedDeckAnalysis'
-import { calculateSuggestedReiki } from '@/utils/reikiCalculation'
+// import { calculateSuggestedReiki } from '@/utils/reikiCalculation' // Unused
 import type { Card } from '@/types/card'
 import type { ColorAlignment } from '@/utils/integratedDeckAnalysis'
 
@@ -13,7 +13,7 @@ interface IntegratedAnalysisProps {
 
 const IntegratedAnalysis: React.FC<IntegratedAnalysisProps> = ({ cards }) => {
   const { currentDeck, getColorDistribution } = useDeckStore()
-  const { cards: reikiCards, applySuggestion, setColor } = useReikiStore()
+  const { cards: reikiCards, applySuggestion } = useReikiStore()
   const [isExpanded, setIsExpanded] = useState(false)
   
   // 統合分析実行
