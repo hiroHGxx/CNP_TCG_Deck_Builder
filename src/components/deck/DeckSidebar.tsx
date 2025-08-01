@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Save, Trash2, Edit3, CheckCircle, AlertCircle, ChevronDown, ChevronUp, FolderOpen, HardDrive } from 'lucide-react'
+import { Edit3, CheckCircle, AlertCircle, ChevronDown, ChevronUp, FolderOpen, HardDrive } from 'lucide-react'
 import { useDeckStore } from '@/stores/deckStore'
 import { useReikiStore } from '@/stores/reikiStore'
 import { ReikiManager } from './ReikiManager'
@@ -78,7 +78,7 @@ export const DeckSidebar: React.FC<DeckSidebarProps> = ({ cards }) => {
   const bpDistribution = deckCardEntries
     .filter(({ card }) => card.cardType === 'unit' && card.bp !== null)
     .reduce((acc, { card, count }) => {
-      acc[card.bp] = (acc[card.bp] || 0) + count
+      acc[card.bp!] = (acc[card.bp!] || 0) + count
       return acc
     }, {} as Record<number, number>)
 
@@ -156,7 +156,7 @@ export const DeckSidebar: React.FC<DeckSidebarProps> = ({ cards }) => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="deck-sidebar">
       {/* v1.0デッキ移行アラート */}
       {showMigrationAlert && (
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
@@ -443,7 +443,7 @@ export const DeckSidebar: React.FC<DeckSidebarProps> = ({ cards }) => {
                 <p className="text-sm">カードを追加してください</p>
               </div>
             ) : (
-              <div className="space-y-2 max-h-64 overflow-y-auto">
+              <div className="space-y-2 max-h-64 overflow-y-auto" data-testid="main-deck-list">
                 {deckCardEntries.map(({ card, count }) => (
                   <div key={card.cardId} className="flex items-center justify-between p-2 border border-gray-100 rounded hover:bg-gray-50">
                     <div className="flex items-center space-x-3 flex-1 min-w-0">

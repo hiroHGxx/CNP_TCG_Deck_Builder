@@ -1,5 +1,5 @@
 import type { Card } from '@/types/card'
-import type { ReikiCard, ColorDistribution } from '@/types/reiki'
+import type { ReikiCard } from '@/types/reiki'
 
 /**
  * 統合デッキ分析ユーティリティ
@@ -125,7 +125,7 @@ export function analyzeIntegratedDeck(
   const balanceScore = calculateBalanceScore(colorAlignment, mainTotal, reikiTotal)
   
   // 推奨事項生成
-  const recommendations = generateRecommendations(colorAlignment, dominantColors, activeColors)
+  const recommendations = generateRecommendations(colorAlignment, dominantColors)
   
   // リスク要因特定
   const riskFactors = identifyRiskFactors(colorAlignment, mainTotal, reikiTotal)
@@ -185,8 +185,7 @@ function calculateBalanceScore(
  */
 function generateRecommendations(
   alignments: ColorAlignment[],
-  dominantColors: string[],
-  activeColors: string[]
+  dominantColors: string[]
 ): string[] {
   const recommendations: string[] = []
   

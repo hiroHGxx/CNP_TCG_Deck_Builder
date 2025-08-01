@@ -26,11 +26,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" role="search" aria-labelledby="search-section-title">
+      <h2 id="search-section-title" className="sr-only">カード検索</h2>
       <div className="relative w-full">
         {/* 検索アイコン */}
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-gray-400" />
+          <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
         </div>
 
         {/* 入力フィールド */}
@@ -39,6 +40,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          aria-label="カード検索"
+          aria-describedby="search-description"
           className="
             w-full pl-10 pr-10 py-3 
             border border-gray-300 rounded-lg 
@@ -48,6 +51,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
             hover:border-gray-400
           "
         />
+        <div id="search-description" className="sr-only">
+          カード名、効果テキストで検索できます
+        </div>
 
         {/* クリアボタン */}
         {value && (
@@ -61,7 +67,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             "
             aria-label="検索をクリア"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         )}
       </div>

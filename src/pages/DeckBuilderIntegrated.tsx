@@ -7,11 +7,13 @@ import SearchBar from '@/components/SearchBar'
 import FilterPanel from '@/components/FilterPanel'
 import { DeckSidebar } from '@/components/deck/DeckSidebar'
 import { IntegratedLayout, CardGridSection } from '@/components/layout/IntegratedLayout'
+import { ErrorBoundaryWrapper, SimpleError } from '@/components/common/ErrorBoundary'
+import { OfflineNotification, ConnectionStatus } from '@/components/common/OfflineNotification'
 import { ChevronDown, ChevronUp, Search } from 'lucide-react'
-import type { Card } from '@/types/card'
+// import type { Card } from '@/types/card' // Unused after removing handleCardClick
 
 const DeckBuilderIntegrated: React.FC = () => {
-  const { cards, loading, error, totalCount } = useCardDB()
+  const { cards, loading, error, totalCount, retry, canRetry } = useCardDB()
   const [showFilters, setShowFilters] = useState(false)
   
   // 検索・フィルタ機能
@@ -31,8 +33,6 @@ const DeckBuilderIntegrated: React.FC = () => {
   const {
     addCardToDeck,
     removeCardFromDeck,
-    clearDeck,
-    saveDeck,
     setAllCards
   } = useDeckStore()
   
@@ -43,19 +43,29 @@ const DeckBuilderIntegrated: React.FC = () => {
     }
   }, [cards, setAllCards])
 
-  const handleCardClick = (card: Card) => {
-    // カード全体クリックによる追加機能を無効化
-    // カードの操作は+/-ボタンのみに限定
-  }
+  // カード全体クリックによる追加機能を無効化
+  // カードの操作は+/-ボタンのみに限定
 
   if (error) {
     return (
       <div className="space-y-6 p-6">
         <h1 className="text-3xl font-bold text-gray-900">Deck Builder</h1>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <h3 className="text-red-800 font-semibold mb-2">Error Loading Cards</h3>
-          <p className="text-red-600">{error}</p>
-        </div>
+        <SimpleError
+          error={`${error.userMessage}${error.suggestion ? ` ${error.suggestion}` : ''}`}
+          onRetry={canRetry ? retry : undefined}
+        />
+        
+        {/* 開発環境でのみ詳細エラーを表示 */}
+        {import.meta.env.MODE === 'development' && (
+          <details className="mt-4">
+            <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
+              技術詳細 (開発環境のみ)
+            </summary>
+            <pre className="mt-2 p-3 bg-gray-100 rounded text-xs overflow-auto">
+              {JSON.stringify(error, null, 2)}
+            </pre>
+          </details>
+        )}
       </div>
     )
   }
@@ -138,7 +148,6 @@ const DeckBuilderIntegrated: React.FC = () => {
             if (card) addCardToDeck(card)
           }}
           onCardRemove={removeCardFromDeck}
-          onCardClick={handleCardClick}
           loading={loading}
         />
       </CardGridSection>
@@ -153,32 +162,51 @@ const DeckBuilderIntegrated: React.FC = () => {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* ヘッダー */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="px-4 lg:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">CNP TCG Deck Builder</h1>
-              <p className="text-sm text-gray-600 mt-1">メインデッキ50枚 + レイキデッキ15枚の統合管理</p>
-            </div>
-            <div className="hidden md:flex items-center space-x-4 text-sm">
-              <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
-                全{totalCount}種類のカード
+    <ErrorBoundaryWrapper
+      onError={(error, errorInfo) => {
+        console.error('DeckBuilderIntegrated Error:', error, errorInfo)
+        // 本番環境では外部ログサービスに送信する等の処理を追加
+      }}
+    >
+      <OfflineNotification />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+        {/* Skip to content リンク */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-md z-50"
+        >
+          メインコンテンツにスキップ
+        </a>
+        
+        {/* ヘッダー */}
+        <header className="bg-white shadow-sm border-b border-gray-200" role="banner">
+          <div className="px-4 lg:px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">CNP TCG Deck Builder</h1>
+                <p className="text-sm text-gray-600 mt-1">メインデッキ50枚 + レイキデッキ15枚の統合管理</p>
               </div>
-              <div className="bg-green-50 text-green-700 px-3 py-1 rounded-full">
-                Phase 2統合UI
+              <div className="hidden md:flex items-center space-x-4 text-sm">
+                <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
+                  全{totalCount}種類のカード
+                </div>
+                <div className="bg-green-50 text-green-700 px-3 py-1 rounded-full">
+                  Phase 2統合UI
+                </div>
+                <ConnectionStatus />
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </header>
 
-      {/* 統合レイアウト */}
-      <IntegratedLayout sidebar={rightColumn}>
-        {leftColumn}
-      </IntegratedLayout>
-    </div>
+        {/* メインコンテンツ */}
+        <main id="main-content" role="main" tabIndex={-1}>
+          <IntegratedLayout sidebar={rightColumn}>
+            {leftColumn}
+          </IntegratedLayout>
+        </main>
+      </div>
+    </ErrorBoundaryWrapper>
   )
 }
 

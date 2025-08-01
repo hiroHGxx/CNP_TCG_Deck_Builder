@@ -5,9 +5,10 @@ interface CardTooltipProps {
   card: Card
   visible: boolean
   position: { x: number; y: number }
+  id?: string
 }
 
-const CardTooltip: React.FC<CardTooltipProps> = ({ card, visible, position }) => {
+const CardTooltip: React.FC<CardTooltipProps> = ({ card, visible, position, id }) => {
   if (!visible) return null
   
 
@@ -93,6 +94,9 @@ const CardTooltip: React.FC<CardTooltipProps> = ({ card, visible, position }) =>
 
   return (
     <div 
+      id={id}
+      role="tooltip"
+      aria-live="polite"
       className="fixed z-50 border rounded-md shadow-xl p-3 max-w-xs pointer-events-none animate-fade-in"
       style={{
         left: `${left}px`,

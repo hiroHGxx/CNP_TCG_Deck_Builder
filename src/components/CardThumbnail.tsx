@@ -1,30 +1,42 @@
-import React, { useState, useRef } from 'react'
-import { Plus, Minus } from 'lucide-react'
+import React, { useState, useRef, useMemo, memo } from 'react'
 import CardTooltip from './CardTooltip'
+import CardButtons from './card/CardButtons'
 import { useDeckStore } from '@/stores/deckStore'
+import { useCardTooltip } from '@/hooks/useCardTooltip'
+import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
+import { getRarityColor, getColorDot, calculateCostDisplay } from '@/utils/cardHelpers'
 import type { Card } from '@/types/card'
 
 interface CardThumbnailProps {
   card: Card
   onAdd?: (cardId: string) => void
   onRemove?: (cardId: string) => void
-  onClick?: (card: Card) => void
   showCount?: number
 }
 
-const CardThumbnail: React.FC<CardThumbnailProps> = ({ 
+const CardThumbnail: React.FC<CardThumbnailProps> = memo(({ 
   card, 
   onAdd,
   onRemove, 
-  onClick, 
   showCount 
 }) => {
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
-  const [showTooltip, setShowTooltip] = useState(false)
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
-  const [touchTimeout, setTouchTimeout] = useState<number | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
+  
+  // ツールチップ機能をカスタムフックに委譲
+  const {
+    showTooltip,
+    tooltipPosition,
+    handleMouseEnter,
+    handleMouseLeave,
+    handleTouchStart,
+    handleTouchEnd,
+    handleTouchMove
+  } = useCardTooltip()
+
+  // キーボードナビゲーション
+  const { handleKeyDown, handleEscapeKey } = useKeyboardNavigation()
   
   // デッキストアから現在のカード枚数を取得
   const { currentDeck, addCardToDeck, removeCardFromDeck, getTotalCardCount } = useDeckStore()
@@ -33,9 +45,7 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
   const totalCards = getTotalCardCount()
   const canAddMore = cardCountInDeck < 4 && totalCards < 50 // 4枚制限 + 50枚制限チェック
 
-  const handleClick = (e: React.MouseEvent) => {
-    // カード全体クリック機能は無効化済み（+/-ボタンのみ使用）
-  }
+  // カード全体クリック機能は無効化済み（+/-ボタンのみ使用）
 
   const handleImageLoad = () => {
     setImageLoading(false)
@@ -46,90 +56,45 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
     setImageLoading(false)
   }
 
-  const handleMouseEnter = () => {
-    const rect = cardRef.current?.getBoundingClientRect()
-    if (rect) {
-      const position = {
-        x: rect.left + rect.width / 2, // カード中央のX座標
-        y: rect.top + window.scrollY    // スクロール位置を考慮したY座標
-      }
-      setTooltipPosition(position)
-      setShowTooltip(true)
-    }
-  }
 
-  const handleMouseLeave = () => {
-    setShowTooltip(false)
-  }
+  // コスト表示の計算（メモ化）
+  const costDisplay = useMemo(() => 
+    calculateCostDisplay(card.colorBalance, card.cost), 
+    [card.colorBalance, card.cost]
+  )
 
-  // モバイル対応: ロングタップでツールチップ表示
-  const handleTouchStart = () => {
-    const rect = cardRef.current?.getBoundingClientRect()
-    if (rect) {
-      const timeout = setTimeout(() => {
-        setTooltipPosition({
-          x: rect.left + rect.width / 2, // カード中央のX座標
-          y: rect.top + window.scrollY    // スクロール位置を考慮したY座標
-        })
-        setShowTooltip(true)
-      }, 500) // 500ms長押しでツールチップ表示
-      
-      setTouchTimeout(timeout)
-    }
-  }
-
-  const handleTouchEnd = () => {
-    if (touchTimeout) {
-      clearTimeout(touchTimeout)
-      setTouchTimeout(null)
-    }
-  }
-
-  const handleTouchMove = () => {
-    if (touchTimeout) {
-      clearTimeout(touchTimeout)
-      setTouchTimeout(null)
-    }
-    setShowTooltip(false)
-  }
-
-  const getRarityColor = (rarity: string) => {
-    switch (rarity) {
-      case 'common': return 'bg-gray-100 text-gray-800'
-      case 'rare': return 'bg-blue-100 text-blue-800'
-      case 'rare_rare': return 'bg-purple-100 text-purple-800'
-      case 'triple_rare': return 'bg-yellow-100 text-yellow-800'
-      case 'super_rare': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  const getColorDot = (color: string) => {
-    switch (color) {
-      case 'red': return 'bg-red-500'
-      case 'blue': return 'bg-blue-500'
-      case 'green': return 'bg-green-500'
-      case 'yellow': return 'bg-yellow-500'
-      case 'colorless': return 'bg-gray-400'
-      default: return 'bg-gray-400'
-    }
-  }
-
-  // コスト表示のためのヘルパー関数
-  const parseCostDisplay = () => {
-    // colorBalance から色コストを抽出 (例: "緑4" -> 4)
-    const colorBalance = card.colorBalance || ''
-    const colorCostMatch = colorBalance.match(/(\d+)/)
-    const colorCost = colorCostMatch ? parseInt(colorCostMatch[1]) : 0
+  // アクセシビリティ用のラベル生成
+  const cardAriaLabel = useMemo(() => {
+    const parts = [
+      `カード: ${card.name}`,
+      `コスト: ${card.cost}`,
+      `色: ${card.color}`,
+      `レアリティ: ${card.rarity}`,
+      `タイプ: ${card.cardType}`
+    ]
     
-    // 無色コスト = 総コスト - 色コスト
-    const colorlessCost = Math.max(0, card.cost - colorCost)
-    
-    return {
-      colorCost,
-      colorlessCost,
-      totalCost: card.cost
+    if (card.bp) {
+      parts.push(`BP: ${card.bp}`)
     }
+    
+    if (cardCountInDeck > 0) {
+      parts.push(`デッキ内: ${cardCountInDeck}枚`)
+    }
+    
+    return parts.join(', ')
+  }, [card, cardCountInDeck])
+
+  // キーボードイベントハンドラー
+  const handleCardKeyDown = (event: React.KeyboardEvent) => {
+    // Escキーでツールチップを閉じる
+    handleEscapeKey(() => {
+      // ツールチップを閉じる処理はuseCardTooltipで管理
+    }, event)
+    
+    // Enter/Spaceキーでツールチップ表示
+    handleKeyDown(() => {
+      handleMouseEnter(cardRef)
+    }, event)
   }
 
   return (
@@ -137,12 +102,18 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
       <div 
         ref={cardRef}
         className="card-thumbnail relative group"
+        role="button"
+        tabIndex={0}
+        aria-label={cardAriaLabel}
+        aria-describedby={`tooltip-${card.cardId}`}
+        aria-pressed={isInDeck}
         style={{ cursor: 'default' }}
-        onMouseEnter={handleMouseEnter}
+        onMouseEnter={() => handleMouseEnter(cardRef)}
         onMouseLeave={handleMouseLeave}
-        onTouchStart={handleTouchStart}
+        onTouchStart={() => handleTouchStart(cardRef)}
         onTouchEnd={handleTouchEnd}
         onTouchMove={handleTouchMove}
+        onKeyDown={handleCardKeyDown}
       >
       {/* カード画像 */}
       <div className="relative aspect-[3/4] bg-gray-100 rounded-t-lg overflow-hidden">
@@ -186,57 +157,18 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
           </div>
         )}
 
-        {/* +ボタン（4枚未満の場合のみ表示） */}
-        {canAddMore && (
-          <div className="absolute bottom-1 right-1">
-            <button
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                if (onAdd) {
-                  onAdd(card.cardId)
-                } else {
-                  addCardToDeck(card)
-                }
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
-              className="bg-green-600 hover:bg-green-700 text-white p-3 rounded-full shadow-lg transform hover:scale-110 transition-all duration-200"
-              title={
-                cardCountInDeck >= 4 
-                  ? `${card.name}は4枚制限に達しています`
-                  : totalCards >= 50 
-                    ? `デッキは50枚制限に達しています`
-                    : `${card.name}をデッキに追加`
-              }
-              style={{ zIndex: 1000, cursor: 'pointer' }}
-            >
-              <Plus className="h-5 w-5" />
-            </button>
-          </div>
-        )}
-        
-        {/* -ボタン（デッキ内カードのみ表示） */}
-        {isInDeck && (
-          <div className="absolute bottom-1 left-1">
-            <button
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                if (onRemove) {
-                  onRemove(card.cardId)
-                } else {
-                  removeCardFromDeck(card.cardId)
-                }
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
-              className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-full shadow-lg transform hover:scale-110 transition-all duration-200"
-              title={`${card.name}をデッキから削除`}
-              style={{ zIndex: 1000, cursor: 'pointer' }}
-            >
-              <Minus className="h-5 w-5" />
-            </button>
-          </div>
-        )}
+        {/* カードボタン（+/-） */}
+        <CardButtons
+          card={card}
+          cardCountInDeck={cardCountInDeck}
+          canAddMore={canAddMore}
+          isInDeck={isInDeck}
+          onAdd={onAdd}
+          onRemove={onRemove}
+          addCardToDeck={addCardToDeck}
+          removeCardFromDeck={removeCardFromDeck}
+          totalCards={totalCards}
+        />
 
         {/* ホバー効果（ボタンより下層に配置） */}
         <div 
@@ -265,31 +197,24 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
         {/* コスト表示（案1: アイコン分離表示） */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-0.5">
-            {(() => {
-              const { colorCost, colorlessCost, totalCost } = parseCostDisplay()
-              return (
-                <>
-                  {/* 色コスト */}
-                  {Array.from({ length: colorCost }).map((_, index) => (
-                    <div
-                      key={`color-${index}`}
-                      className={`w-2 h-2 rounded-full ${getColorDot(card.color)}`}
-                    />
-                  ))}
-                  {/* 無色コスト */}
-                  {Array.from({ length: colorlessCost }).map((_, index) => (
-                    <div
-                      key={`colorless-${index}`}
-                      className="w-2 h-2 rounded-full bg-gray-400"
-                    />
-                  ))}
-                  {/* 総コスト表示 */}
-                  <span className="text-xs font-semibold text-gray-600 ml-1">
-                    ({totalCost})
-                  </span>
-                </>
-              )
-            })()}
+            {/* 色コスト */}
+            {Array.from({ length: costDisplay.colorCost }).map((_, index) => (
+              <div
+                key={`color-${index}`}
+                className={`w-2 h-2 rounded-full ${getColorDot(card.color)}`}
+              />
+            ))}
+            {/* 無色コスト */}
+            {Array.from({ length: costDisplay.colorlessCost }).map((_, index) => (
+              <div
+                key={`colorless-${index}`}
+                className="w-2 h-2 rounded-full bg-gray-400"
+              />
+            ))}
+            {/* 総コスト表示 */}
+            <span className="text-xs font-semibold text-gray-600 ml-1">
+              ({costDisplay.totalCost})
+            </span>
           </div>
         </div>
 
@@ -317,9 +242,10 @@ const CardThumbnail: React.FC<CardThumbnailProps> = ({
         card={card}
         visible={showTooltip}
         position={tooltipPosition}
+        id={`tooltip-${card.cardId}`}
       />
     </>
   )
-}
+})
 
 export default CardThumbnail

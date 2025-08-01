@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import CardThumbnail from './CardThumbnail'
 import type { Card } from '@/types/card'
 
@@ -6,15 +6,13 @@ interface CardGridProps {
   cards: Card[]
   onCardAdd?: (cardId: string) => void
   onCardRemove?: (cardId: string) => void
-  onCardClick?: (card: Card) => void
   loading?: boolean
 }
 
-const CardGrid: React.FC<CardGridProps> = ({ 
+const CardGrid: React.FC<CardGridProps> = memo(({ 
   cards, 
   onCardAdd,
   onCardRemove, 
-  onCardClick, 
   loading = false 
 }) => {
   if (loading) {
@@ -46,24 +44,27 @@ const CardGrid: React.FC<CardGridProps> = ({
   return (
     <div className="space-y-4">
       {/* カード数表示 */}
-      <div className="text-sm text-gray-600">
+      <div className="text-sm text-gray-600" aria-live="polite">
         {cards.length}枚のカードが見つかりました
       </div>
 
       {/* カードグリッド */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
+      <div 
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4"
+        role="grid" 
+        aria-label="カード一覧"
+      >
         {cards.map((card) => (
           <CardThumbnail
             key={card.cardId}
             card={card}
             onAdd={onCardAdd}
             onRemove={onCardRemove}
-            onClick={onCardClick}
           />
         ))}
       </div>
     </div>
   )
-}
+})
 
 export default CardGrid

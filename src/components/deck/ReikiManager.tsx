@@ -75,7 +75,7 @@ export const ReikiManager: React.FC<ReikiManagerProps> = ({ allCards = [] }) => 
   // }
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="reiki-deck-section">
       {/* ヘッダー */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">

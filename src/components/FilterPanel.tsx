@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo, useCallback } from 'react'
 import { Filter, X } from 'lucide-react'
 import type { CardFilter, CardColor, CardRarity, CardType } from '@/types/card'
 
@@ -8,13 +8,13 @@ interface FilterPanelProps {
   onClearAll: () => void
 }
 
-const FilterPanel: React.FC<FilterPanelProps> = ({
+const FilterPanel: React.FC<FilterPanelProps> = memo(({
   filters,
   onFilterChange,
   onClearAll
 }) => {
-  // 色フィルタの更新
-  const handleColorChange = (color: CardColor, checked: boolean) => {
+  // 色フィルタの更新（メモ化）
+  const handleColorChange = useCallback((color: CardColor, checked: boolean) => {
     const currentColors = filters.colors || []
     const newColors = checked
       ? [...currentColors, color]
@@ -24,10 +24,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       ...filters,
       colors: newColors.length > 0 ? newColors : undefined
     })
-  }
+  }, [filters, onFilterChange])
 
-  // カード種類フィルタの更新
-  const handleCardTypeChange = (cardType: CardType, checked: boolean) => {
+  // カード種類フィルタの更新（メモ化）
+  const handleCardTypeChange = useCallback((cardType: CardType, checked: boolean) => {
     const currentTypes = filters.cardTypes || []
     const newTypes = checked
       ? [...currentTypes, cardType]
@@ -37,10 +37,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       ...filters,
       cardTypes: newTypes.length > 0 ? newTypes : undefined
     })
-  }
+  }, [filters, onFilterChange])
 
-  // レアリティフィルタの更新
-  const handleRarityChange = (rarity: CardRarity, checked: boolean) => {
+  // レアリティフィルタの更新（メモ化）
+  const handleRarityChange = useCallback((rarity: CardRarity, checked: boolean) => {
     const currentRarities = filters.rarities || []
     const newRarities = checked
       ? [...currentRarities, rarity]
@@ -50,16 +50,16 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       ...filters,
       rarities: newRarities.length > 0 ? newRarities : undefined
     })
-  }
+  }, [filters, onFilterChange])
 
-  // コストフィルタの更新
-  const handleCostChange = (type: 'min' | 'max', value: string) => {
+  // コストフィルタの更新（メモ化）
+  const handleCostChange = useCallback((type: 'min' | 'max', value: string) => {
     const numValue = value === '' ? undefined : parseInt(value)
     onFilterChange({
       ...filters,
       [type === 'min' ? 'minCost' : 'maxCost']: numValue
     })
-  }
+  }, [filters, onFilterChange])
 
   // アクティブなフィルタ数を計算
   const activeFilterCount = [
@@ -91,12 +91,16 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   ]
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-4">
+    <div 
+      className="bg-white border border-gray-200 rounded-lg p-4 space-y-4"
+      role="region"
+      aria-labelledby="filter-panel-title"
+    >
       {/* ヘッダー */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Filter className="h-5 w-5 text-gray-600" />
-          <h3 className="text-lg font-semibold text-gray-900">フィルタ</h3>
+          <Filter className="h-5 w-5 text-gray-600" aria-hidden="true" />
+          <h3 id="filter-panel-title" className="text-lg font-semibold text-gray-900">フィルタ</h3>
           {activeFilterCount > 0 && (
             <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
               {activeFilterCount}
@@ -115,25 +119,26 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       </div>
 
       {/* 色フィルタ */}
-      <div className="space-y-2">
-        <h4 className="text-sm font-medium text-gray-700">色</h4>
-        <div className="flex flex-wrap gap-2">
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-medium text-gray-700">色</legend>
+        <div className="flex flex-wrap gap-2" role="group" aria-labelledby="color-filter-label">
           {colorOptions.map(({ value, label, bgColor }) => (
-            <label key={value} className="flex items-center space-x-2 cursor-pointer">
+            <label key={value} className="flex items-center space-x-2 cursor-pointer" data-color={value} data-testid={`filter-color-${value}`}>
               <input
                 type="checkbox"
                 checked={filters.colors?.includes(value) || false}
                 onChange={(e) => handleColorChange(value, e.target.checked)}
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                aria-describedby={`color-${value}-description`}
               />
               <div className="flex items-center space-x-1">
-                <div className={`w-3 h-3 rounded-full ${bgColor}`} />
-                <span className="text-sm text-gray-700">{label}</span>
+                <div className={`w-3 h-3 rounded-full ${bgColor}`} aria-hidden="true" />
+                <span className="text-sm text-gray-700" id={`color-${value}-description`}>{label}</span>
               </div>
             </label>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       {/* コストフィルタ */}
       <div className="space-y-2">
@@ -198,6 +203,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       </div>
     </div>
   )
-}
+})
 
 export default FilterPanel
