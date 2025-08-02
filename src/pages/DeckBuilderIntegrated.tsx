@@ -5,16 +5,18 @@ import { useDeckStore } from '@/stores/deckStore'
 import CardGrid from '@/components/CardGrid'
 import SearchBar from '@/components/SearchBar'
 import FilterPanel from '@/components/FilterPanel'
-import { DeckSidebar } from '@/components/deck/DeckSidebar'
+import { DeckSidebar, type ViewMode } from '@/components/deck/DeckSidebar'
+import { DeckVisualDisplay } from '@/components/deck/DeckVisualDisplay'
 import { IntegratedLayout, CardGridSection } from '@/components/layout/IntegratedLayout'
 import { ErrorBoundaryWrapper, SimpleError } from '@/components/common/ErrorBoundary'
-import { OfflineNotification, ConnectionStatus } from '@/components/common/OfflineNotification'
+import { OfflineNotification } from '@/components/common/OfflineNotification'
 import { ChevronDown, ChevronUp, Search } from 'lucide-react'
 // import type { Card } from '@/types/card' // Unused after removing handleCardClick
 
 const DeckBuilderIntegrated: React.FC = () => {
   const { cards, loading, error, totalCount, retry, canRetry } = useCardDB()
   const [showFilters, setShowFilters] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
   
   // 検索・フィルタ機能
   const {
@@ -128,29 +130,35 @@ const DeckBuilderIntegrated: React.FC = () => {
         </div>
       </CardGridSection>
 
-      {/* カードグリッドセクション */}
-      <CardGridSection>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">カード一覧</h2>
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-              {filteredCount}種類表示中
-            </div>
-            <div className="text-xs text-gray-500">
-              全{totalCount}種類
+      {/* メインコンテンツ - ビューモード切り替え */}
+      {viewMode === 'list' ? (
+        <CardGridSection>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">カード一覧</h2>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                {filteredCount}種類表示中
+              </div>
+              <div className="text-xs text-gray-500">
+                全{totalCount}種類
+              </div>
             </div>
           </div>
-        </div>
-        <CardGrid
-          cards={filteredCards}
-          onCardAdd={(cardId) => {
-            const card = cards.find(c => c.cardId === cardId)
-            if (card) addCardToDeck(card)
-          }}
-          onCardRemove={removeCardFromDeck}
-          loading={loading}
-        />
-      </CardGridSection>
+          <CardGrid
+            cards={filteredCards}
+            onCardAdd={(cardId) => {
+              const card = cards.find(c => c.cardId === cardId)
+              if (card) addCardToDeck(card)
+            }}
+            onCardRemove={removeCardFromDeck}
+            loading={loading}
+          />
+        </CardGridSection>
+      ) : (
+        <CardGridSection>
+          <DeckVisualDisplay />
+        </CardGridSection>
+      )}
     </>
   )
 
@@ -158,6 +166,8 @@ const DeckBuilderIntegrated: React.FC = () => {
   const rightColumn = (
     <DeckSidebar 
       cards={cards}
+      viewMode={viewMode}
+      onViewModeChange={setViewMode}
     />
   )
 
@@ -184,16 +194,12 @@ const DeckBuilderIntegrated: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">CNP TCG Deck Builder</h1>
-                <p className="text-sm text-gray-600 mt-1">メインデッキ50枚 + レイキデッキ15枚の統合管理</p>
+                <p className="text-sm text-gray-600 mt-1">CNPトレカのデッキ総合管理</p>
               </div>
               <div className="hidden md:flex items-center space-x-4 text-sm">
                 <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
                   全{totalCount}種類のカード
                 </div>
-                <div className="bg-green-50 text-green-700 px-3 py-1 rounded-full">
-                  Phase 2統合UI
-                </div>
-                <ConnectionStatus />
               </div>
             </div>
           </div>
