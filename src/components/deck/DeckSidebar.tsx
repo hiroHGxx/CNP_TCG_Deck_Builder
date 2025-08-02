@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Edit3, CheckCircle, AlertCircle, ChevronDown, ChevronUp, FolderOpen, HardDrive } from 'lucide-react'
+import { Edit3, CheckCircle, AlertCircle, ChevronDown, ChevronUp, FolderOpen, HardDrive, Grid3X3, List } from 'lucide-react'
 import { useDeckStore } from '@/stores/deckStore'
 import { useReikiStore } from '@/stores/reikiStore'
 import { ReikiManager } from './ReikiManager'
@@ -8,15 +8,19 @@ import IntegratedDeckManager from './IntegratedDeckManager'
 import IntegratedAnalysis from './IntegratedAnalysis'
 import type { Card } from '@/types/card'
 
+export type ViewMode = 'list' | 'visual';
+
 interface DeckSidebarProps {
   cards: Card[]
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
 }
 
 /**
  * 統合デッキサイドバー
  * メインデッキ + レイキデッキ + 統計を一元管理
  */
-export const DeckSidebar: React.FC<DeckSidebarProps> = ({ cards }) => {
+export const DeckSidebar: React.FC<DeckSidebarProps> = ({ cards, viewMode, onViewModeChange }) => {
   const { 
     currentDeck, 
     setDeckName, 
@@ -183,6 +187,38 @@ export const DeckSidebar: React.FC<DeckSidebarProps> = ({ cards }) => {
           </div>
         </div>
       )}
+
+      {/* ビューモード切り替え */}
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">表示モード</h3>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => onViewModeChange('list')}
+            className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === 'list'
+                ? 'bg-cnp-blue text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <List className="w-4 h-4" />
+            <span>リスト</span>
+          </button>
+          <button
+            onClick={() => onViewModeChange('visual')}
+            className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === 'visual'
+                ? 'bg-cnp-blue text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <Grid3X3 className="w-4 h-4" />
+            <span>ビジュアル</span>
+          </button>
+        </div>
+        <div className="mt-2 text-xs text-gray-500">
+          {viewMode === 'list' ? 'カード一覧・編集モード' : 'トレカデッキ表示'}
+        </div>
+      </div>
 
       {/* デッキ統計 */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">

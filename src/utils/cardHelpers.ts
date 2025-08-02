@@ -31,6 +31,43 @@ export const getColorDot = (color: string): string => {
 }
 
 /**
+ * 色均衡文字列をパースして色ドット情報を取得
+ * 例: "緑4" -> [{ color: 'green', count: 4, className: 'bg-green-500' }]
+ */
+export const getColorDots = (colorBalance: string): Array<{ color: string; count: number; className: string }> => {
+  if (!colorBalance) return []
+  
+  const colorMap: Record<string, string> = {
+    '赤': 'red',
+    '青': 'blue', 
+    '緑': 'green',
+    '黄': 'yellow'
+  }
+  
+  const results: Array<{ color: string; count: number; className: string }> = []
+  
+  // "緑4" のような形式をパース
+  const match = colorBalance.match(/([赤青緑黄])(\d+)/)
+  if (match) {
+    const [, colorChar, countStr] = match
+    const color = colorMap[colorChar]
+    const count = parseInt(countStr, 10)
+    
+    if (color && count > 0) {
+      for (let i = 0; i < count; i++) {
+        results.push({
+          color,
+          count: 1,
+          className: getColorDot(color)
+        })
+      }
+    }
+  }
+  
+  return results
+}
+
+/**
  * カードのコスト表示情報を計算
  */
 export const calculateCostDisplay = (colorBalance?: string, totalCost?: number) => {
