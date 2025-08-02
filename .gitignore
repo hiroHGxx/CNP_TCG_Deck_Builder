@@ -59,3 +59,6 @@ sw.js
 sw.js.map
 workbox-*.js
 workbox-*.js.map
+
+# Archive folder (development artifacts, old documents, screenshots)
+archive/
