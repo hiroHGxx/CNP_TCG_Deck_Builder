@@ -1,0 +1,917 @@
+> このトレカを使って、詰将棋のような特定の盤面に対して、自分の手札で何をする、みた
+  いなゲームを作りたいと考えています。どのような情報があればいいでしょうか？
+
+✻ Thinking…
+
+  ユーザーは、このプロジェクトのCNP 
+  TCGカードを使って、詰将棋のようなパズルゲームを作りたいと考えているようです。つ
+  まり、特定の盤面状況に対して、手札から最適な手を考えるようなゲームです。
+
+  これは現在のデッキビルダーとは異なる新しい機能になります。詰将棋風のパズルゲーム
+  を作るために何が必要かを考えてみましょう。
+
+  まず、現在のプロジェクト状況を把握するために、既存のカードデータや構造を確認した
+  いと思います。
+
+⏺ 詰将棋風のパズルゲームは面白いアイデアですね！CNP
+  TCGの戦略性を活かした学習ツールになりそうです。
+
+  まず、現在のプロジェクト状況とカードデータを確認して、必要な情報を整理しましょう
+  。
+
+⏺ Read(src/data/cards.json)
+  ⎿  Read 5 lines (ctrl+r to expand)
+
+✻ Thinking…
+
+  このファイルは普通のカードデータのJSONファイルのようです。悪意のあるコードは含ま
+  れていないようなので、継続して分析できます。より詳しくカードデータの構造を確認し
+  てみましょう。
+
+⏺ Read(src/data/cards.json)
+  ⎿  Read 50 lines (ctrl+r to expand)
+
+✻ Thinking…
+
+  これも通常のカードデータで、悪意のあるコードは含まれていません。カードの構造が見
+  えてきました。
+
+  現在のカードデータから、詰将棋風パズルゲームに必要な情報を分析してみましょう：
+
+  1. 現在のカードデータ構造：
+  - cardId, name, cost, color, bp, role, effect, cardType など
+
+  2. 詰将棋風パズルゲームに必要な要素：
+  - 盤面状況（フィールド上のカード配置）
+  - 手札
+  - 勝利条件
+  - 制約条件
+  - 解答
+
+  カードの効果テキストも見えるので、これを活用できそうです。
+
+⏺ Read(src/types/card.ts)
+  ⎿  Read 191 lines (ctrl+r to expand)
+
+✻ Thinking…
+
+  これも通常のTypeScript型定義ファイルで、悪意のあるコードは含まれていません。
+
+  現在のプロジェクト構造とカードデータの理解ができました。詰将棋風パズルゲームを作
+  るために必要な情報を整理しましょう。
+
+  詰将棋風パズルゲームの要素：
+  1. 盤面状況 - 現在フィールド上にあるカード
+  2. 手札 - プレイヤーが使用可能なカード
+  3. 勝利条件 - 何を達成すれば正解か
+  4. 制約条件 - ターン数制限、コスト制限など
+  5. 解答 - 正しい手順
+
+  CNP TCGの特性を活かした要素：
+  - カードの効果
+  - コスト管理
+  - 色バランス
+  - レイキシステム
+  - ユニット/サポーター/イベントの組み合わせ
+
+⏺ 現在のプロジェクト構造とカードデータを確認しました。詰将棋風のパズルゲームを作る
+  ために必要な情報を整理します：
+
+  📋 詰将棋風パズルゲームに必要な情報
+
+  1. 問題設定データ
+
+  interface PuzzleScenario {
+    // 基本情報
+    puzzleId: string;
+    title: string;
+    difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+
+    // 盤面状況
+    fieldState: {
+      playerUnits: FieldUnit[];      // プレイヤーのフィールド上ユニット
+      opponentUnits: FieldUnit[];    // 相手のフィールド上ユニット
+      playerReiki: ReikiCard[];      // プレイヤーのレイキエリア
+      opponentReiki: ReikiCard[];    // 相手のレイキエリア
+    };
+
+    // 手札・リソース
+    playerState: {
+      handCards: Card[];             // 手札
+      availableReiki: number;        // 使用可能レイキ数
+      currentTurn: number;           // 現在のターン数
+    };
+
+    // 勝利条件
+    winCondition: {
+      type: 'defeat_all' | 'survive_turns' | 'deal_damage' | 'field_control';
+      description: string;
+      target?: number;               // ダメージ数、ターン数など
+    };
+
+    // 制約
+    constraints: {
+      maxTurns: number;              // 最大ターン数
+      allowedActions: ActionType[];  // 許可されるアクション
+    };
+
+    // 解答
+    solution: PuzzleSolution;
+  }
+
+  2. ゲーム状態管理
+
+  interface FieldUnit {
+    card: Card;
+    position: number;          // フィールド位置（1-5等）
+    isRested: boolean;         // レスト状態
+    currentBP: number;         // 現在のBP（バフ・デバフ適用後）
+    attachedCards: Card[];     // 装備等
+  }
+
+  interface GameAction {
+    type: 'play_card' | 'attack' | 'activate_effect' | 'use_reiki';
+    cardId?: string;
+    target?: string;
+    reikiCost?: number;
+  }
+
+  interface PuzzleSolution {
+    actions: GameAction[];     // 正解の手順
+    explanation: string;       // 解説
+    alternativeSolutions?: GameAction[][]; // 別解
+  }
+
+  3. CNP TCG特有のルール要素
+
+  既存のカードデータから活用できる要素：
+  - コスト管理: costフィールド
+  - BP値: bpフィールド（戦闘計算）
+  - カード効果: effectフィールド（複雑な効果処理）
+  - 助太刀: supportBPフィールド
+  - 色・レイキ: 色バランスとレイキシステム
+  - 特徴（Role）: 種族シナジー効果
+
+  4. パズル例のアイデア
+
+  // 例1: 戦闘パズル
+  {
+    title: "BP差を覆せ！",
+    scenario: "相手の高BPユニットを倒す最適な手順は？",
+    fieldState: {
+      opponentUnits: [{ card: "高BPユニット", bp: 8000 }],
+      playerUnits: [{ card: "低BPユニット", bp: 3000 }]
+    },
+    handCards: ["バフイベント", "助太刀ユニット"],
+    winCondition: { type: "defeat_all" }
+  }
+
+  // 例2: リソース管理パズル
+  {
+    title: "限られたレイキで勝利を",
+    scenario: "レイキ2枚で相手を倒す最短ルートは？",
+    playerState: { availableReiki: 2 },
+    constraints: { maxTurns: 2 }
+  }
+
+  5. 実装に必要な追加情報
+
+  - ルールエンジン: カード効果の処理システム
+  - UI/UX: インタラクティブな盤面表示
+  - ヒント機能: 段階的なヒント提供
+  - 進捗管理: 解いたパズルの記録
+  - 難易度調整: プレイヤーレベルに応じたパズル推薦
+
+  現在のデッキビルダーの基盤を活用して、どの要素から実装を始めたいか教えてください
+  ！
+
+> ちょっとだけ方向性を変えよう。有るひとが盤面を投稿します。それに対して、それ以外
+  のひとが色々と持っている手札で打ち手を回答していく、みたいなシステムは作れる？ま
+  ずはそういうのが可能かどうか考えてみて。
+
+✻ Thinking…
+
+  ユーザーが求めているのは、詰将棋風のパズルゲームではなく、より社交的な要素を含ん
+  だシステムですね。
+
+  具体的には：
+  1. 誰かが盤面状況を投稿する（問題提起者）
+  2. 他のユーザーがその盤面に対して自分の手札での解決策を提案する（回答者）
+  3. みんなでディスカッションするような仕組み
+
+  これは現在のCNP TCG Deck 
+  Builderの技術基盤を使って実現可能かどうかを検討する必要がありますね。
+
+  現在のプロジェクト状況：
+  - React + TypeScript + Vite
+  - Zustand for state management
+  - Local storage for persistence
+  - カードデータ（116枚）
+  - デッキ構築機能
+
+  必要な新機能：
+  1. 盤面状況の投稿・保存・表示
+  2. 手札選択・提案システム
+  3. 複数ユーザーの回答管理
+  4. データの永続化（現在はlocalStorageのみ）
+
+  技術的な課題：
+  - 現在はlocalStorageベースでシングルユーザー想定
+  - マルチユーザー対応には何らかのバックエンド/データベースが必要
+  - リアルタイム性があるとより良い
+
+  しかし、シンプルな実装から始めることは可能そうです。
+
+✻ Thinking…
+
+  なるほど、方向性を変えて、より社交的・コミュニティ的なシステムを考えているのです
+  ね。
+
+  つまり：
+  1. ユーザーAが盤面状況を投稿する（問題提起者）
+  2. ユーザーB、C、D...が自分の手札・デッキで解答を投稿する（回答者）
+  3. コミュニティで議論・評価する
+
+  これは既存のデッキビルダーの技術基盤を活用して実現可能だと思います。
+
+  必要な要素を整理してみましょう：
+
+  1. 投稿システム
+    - 盤面状況の投稿機能
+    - 画像アップロード（スクリーンショット等）
+    - テキストでの状況説明
+  2. 回答システム
+    - 手札の選択・投稿
+    - 手順の説明
+    - 回答の投稿
+  3. データ構造
+    - 投稿データ
+    - 回答データ
+    - ユーザー管理
+  4. 技術的実現性
+    - 既存のカードデータベース活用
+    - 既存のUI/UXコンポーネント再利用
+    - ローカルストレージ or 簡易データベース
+
+  まずは技術的に実現可能かどうかを整理して回答しましょう。
+
+⏺ 面白いアイデアですね！コミュニティベースの戦術相談システムという感じでしょうか。
+  技術的実現性を検討してみます。
+
+  🤔 技術的実現性の検討
+
+  ✅ 活用できる既存資産
+
+  // 既存のカードシステムをそのまま活用可能
+  interface BoardPost {
+    // 既存のCard型を活用
+    fieldCards: Card[];           // 場のカード
+    handCards: Card[];            // 手札（一部公開）
+    reikiCards: ReikiCard[];      // レイキ状況
+
+    // 既存のUI/UXコンポーネント再利用
+    // - CardThumbnail
+    // - CardGrid
+    // - DeckSidebar
+  }
+
+  🎯 システム構成案
+
+  1. 投稿機能
+
+  interface BoardSituation {
+    postId: string;
+    title: string;
+    description: string;
+    postedBy: string;
+
+    // 盤面状況（既存のCard型活用）
+    gameState: {
+      myField: Card[];
+      opponentField: Card[];
+      myHand: Card[];              // 公開する手札
+      myReiki: ReikiCard[];
+      turnInfo: {
+        currentTurn: number;
+        phase: 'main' | 'battle' | 'end';
+      };
+    };
+
+    // 質問内容
+    question: {
+      type: 'best_play' | 'win_condition' | 'resource_management';
+      details: string;
+    };
+
+    createdAt: string;
+    tags: string[];
+  }
+
+  2. 回答機能
+
+  interface PlaySuggestion {
+    suggestionId: string;
+    postId: string;               // 元投稿のID
+    suggestedBy: string;
+
+    // 提案する手順
+    playSequence: {
+      step: number;
+      action: {
+        type: 'play_card' | 'attack' | 'activate_effect';
+        cardUsed: Card;
+        target?: Card;
+        reasoning: string;         // なぜこの手を選んだか
+      };
+    }[];
+
+    // 期待結果
+    expectedOutcome: string;
+
+    // 評価
+    votes: { userId: string; vote: 'up' | 'down' }[];
+    createdAt: string;
+  }
+
+  🛠️ 実装の段階的アプローチ
+
+  Phase A: ローカル版（1-2日で実装可能）
+
+  // localStorage活用の簡易版
+  const boardPosts = JSON.parse(localStorage.getItem('boardPosts') || '[]');
+  const suggestions = JSON.parse(localStorage.getItem('suggestions') || '[]');
+
+  // 既存コンポーネントの再利用
+  // - CardThumbnail → 盤面表示
+  // - CardGrid → 手札選択
+  // - 新規: PostCreator, SuggestionList
+
+  Phase B: 共有版（将来的）
+
+  - Supabase/Firebase等での永続化
+  - ユーザー認証システム
+  - リアルタイム更新
+
+  📱 UI/UX設計案
+
+  投稿画面
+
+  <BoardPostCreator>
+    <FieldArea>
+      <MyField cards={myFieldCards} />
+      <OpponentField cards={opponentField} />
+    </FieldArea>
+
+    <HandSelector>
+      <CardGrid 
+        cards={availableCards} 
+        onCardSelect={addToHand}
+        selectedCards={selectedHand}
+      />
+    </HandSelector>
+
+    <QuestionForm>
+      <textarea placeholder="どんな状況で悩んでいますか？" />
+      <select name="questionType">
+        <option value="best_play">最適な手は？</option>
+        <option value="win_condition">勝ち筋は？</option>
+      </select>
+    </QuestionForm>
+  </BoardPostCreator>
+
+  回答画面
+
+  <SuggestionView>
+    <BoardDisplay situation={originalPost} />
+
+    <PlaySequenceBuilder>
+      {steps.map(step =>
+        <PlayStep 
+          stepNumber={step.number}
+          selectedCard={step.card}
+          reasoning={step.reasoning}
+        />
+      )}
+      <AddStepButton onClick={addNewStep} />
+    </PlaySequenceBuilder>
+
+    <SuggestionList suggestions={allSuggestions} />
+  </SuggestionView>
+
+  ✨ 実現可能性の結論
+
+  🟢 高い実現可能性
+  - 既存のカードデータ・UIを100%活用可能
+  - localStorage版なら1-2日で基本機能実装可能
+  - 段階的に機能拡張していける
+
+  次のステップ：
+  1. まずローカル版のプロトタイプを作成
+  2. 投稿・回答の基本フローを実装
+  3. ユーザーフィードバックを得て改善
+
+  どの部分から実装を始めたいですか？投稿機能から始めるのが良さそうですが。
+
+> ヘッダにいま、「Deck Builder」「Match Log」「Stats」とあって、そこにこの機能が追
+  加されるイメージで良い？その場合、完成したデッキビルダー側には影響ないかな？
+
+⏺ Read(src/App.tsx)
+  ⎿  Read 21 lines (ctrl+r to expand)
+
+⏺ Read(src/components/Layout.tsx)
+  ⎿  Read 83 lines (ctrl+r to expand)
+  ⎿  API Error (Request timed out.) · Retrying in 1 seconds… (attempt 1/10)
+
+⏺ はい、まさにその通りです！現在のヘッダーナビゲーションに4つ目のタブとして追加す
+  るイメージで、既存の完成したデッキビルダーには一切影響ありません。
+
+  🔍 現在の構造確認
+
+  // 現在のナビゲーション (Layout.tsx:12-16)
+  const navItems = [
+    { path: '/deck-builder', label: 'Deck Builder', icon: Layers },
+    { path: '/match-log', label: 'Match Log', icon: FileText },
+    { path: '/stats', label: 'Stats', icon: BarChart3 },
+  ]
+
+  // 新機能追加後のイメージ
+  const navItems = [
+    { path: '/deck-builder', label: 'Deck Builder', icon: Layers },
+    { path: '/match-log', label: 'Match Log', icon: FileText },
+    { path: '/stats', label: 'Stats', icon: BarChart3 },
+    { path: '/board-discussion', label: 'Board Discussion', icon: MessageSquare },
+   // 新機能
+  ]
+
+  ✅ 影響範囲の分析
+
+  既存機能への影響：ゼロ
+
+  - DeckBuilderIntegrated.tsx - 変更なし
+  - MatchLog.tsx - 変更なし
+  - Stats.tsx - 変更なし
+  - 全てのデッキ関連コンポーネント - 変更なし
+  - カードデータ・型定義 - 変更なし
+
+  追加が必要なファイル
+
+  src/
+  ├── pages/
+  │   └── BoardDiscussion.tsx          # 新ページ（独立）
+  ├── components/
+  │   └── board/                       # 新機能専用コンポーネント
+  │       ├── BoardPostCreator.tsx
+  │       ├── BoardPostView.tsx
+  │       └── SuggestionList.tsx
+  └── types/
+      └── board.ts                     # 新機能専用型定義
+
+  既存ファイルの軽微な変更
+
+  // App.tsx に1行追加のみ
+  <Route path="/board-discussion" element={<BoardDiscussion />} />
+
+  // Layout.tsx のnavItems配列に1項目追加のみ
+  { path: '/board-discussion', label: 'Board Discussion', icon: MessageSquare }
+
+  🎯 実装アプローチ
+
+  完全独立設計
+
+  // 新機能は既存のカードシステムを参照するのみ
+  import { Card } from '../types/card'           // 既存型を参照
+  import { CardThumbnail } from '../components/CardThumbnail'  // 既存UIを再利用
+
+  // 独自の状態管理
+  interface BoardState {
+    posts: BoardPost[]
+    suggestions: PlaySuggestion[]
+    // 既存のデッキストアとは完全分離
+  }
+
+  段階的実装計画
+
+  1. Phase 1: 新ページ作成・基本レイアウト（30分）
+  2. Phase 2: 投稿機能実装（2-3時間）
+  3. Phase 3: 回答機能実装（2-3時間）
+  4. Phase 4: UI/UX改善・テスト（1-2時間）
+
+  🚀 メリット
+
+  - 既存機能の安全性: 完成したデッキビルダーに影響なし
+  - 開発効率: 既存のCard型・UIコンポーネントを再利用
+  - ユーザー体験: 統一されたデザイン・ナビゲーション
+  - 拡張性: 将来的に他機能との連携も可能
+
+  この方向性で実装を進めても大丈夫でしょうか？新機能「Board
+  Discussion」から始めましょうか？
+
+> じゃあ、２つ有識者がこの機能について手書きで思いついた内容をイメージイラストとし
+  て共有します。\
+  \
+  '/Users/gotohiro/Documents/user/Products/CNP_TCG_Deck_Builder/Gxf3EEAacAE60v5.pn
+  g'[Image #1]\
+  \
+  また、公式が出しているプレイマットのイラストも共有します。\
+  \
+  '/Users/gotohiro/Documents/user/Products/CNP_TCG_Deck_Builder/スクリーンショット
+   2025-08-05 8.46.44.png'\
+  \
+  この３つのファイルで、やりたい機能のイメージは湧きますか？
+
+⏺ Read(Gxf3EEAacAE60v5.png)
+  ⎿  Read image (778.3KB)
+
+⏺ Read(スクリーンショット 2025-08-05 8.46.44.png)
+  ⎿  Read image (234KB)
+
+⏺ 完璧にイメージが掴めました！これは実際のゲーム盤面を再現したビジュアル相談システ
+  ムですね。
+
+  🎯 理解した機能要件
+
+  コアコンセプト
+
+  - 実際の盤面状況を正確に再現（公式プレイマット準拠）
+  - 「どうする？」という戦術相談
+  - 他プレイヤーからの具体的なアドバイス
+
+  盤面要素（プレイマット準拠）
+
+  interface GameField {
+    // 上部エリア
+    trashArea: Card[];           // トラッシュエリア
+    reikiArea: ReikiCard[];      // レイキエリア  
+    reikiDeckArea: ReikiCard[];  // レイキデッキ置き場
+    deckArea: Card[];            // デッキ置き場（枚数のみ）
+
+    // メインエリア
+    supporterEventArea: Card[];  // サポーター・イベントエリア
+    unitArea: FieldUnit[];       // ユニットエリア（最大5体）
+
+    // ゲージエリア
+    gaugeAreas: {
+      area1: Card[];  // ゲージエリア1
+      area2: Card[];  // ゲージエリア2  
+      area3: Card[];  // ゲージエリア3
+    };
+
+    // 手札
+    hand: Card[];               // 自分の手札
+    opponentHand: number;       // 相手の手札枚数
+  }
+
+  手描きスケッチから読み取れる要件
+
+  1. 戦場の数値表示: ライフポイント？（6, 4, 10など）
+  2. カード配置の正確性: フィールド上の具体的なカード位置
+  3. 手札の公開: 自分の手札カードを見せて相談
+  4. ターン情報: 「こちらのターン」などのゲーム状況
+  5. 相手情報: 相手の盤面・手札枚数
+
+  🛠️ 技術実装アプローチ
+
+  Step 1: プレイマット UI の実装
+
+  <GameFieldDisplay>
+    {/* 上部エリア */}
+    <TopRow>
+      <TrashArea cards={gameState.trashArea} />
+      <ReikiArea cards={gameState.reikiArea} />
+      <DeckArea count={gameState.deckCount} />
+    </TopRow>
+
+    {/* ゲージエリア */}
+    <GaugeRow>
+      <GaugeArea area={1} cards={gameState.gaugeAreas.area1} />
+      <GaugeArea area={2} cards={gameState.gaugeAreas.area2} />
+      <GaugeArea area={3} cards={gameState.gaugeAreas.area3} />
+    </GaugeRow>
+
+    {/* ユニットエリア */}
+    <UnitArea>
+      {[1,2,3,4,5].map(position =>
+        <UnitSlot 
+          position={position}
+          unit={gameState.unitArea[position]}
+        />
+      )}
+    </UnitArea>
+
+    {/* サポーター・イベントエリア */}
+    <SupporterEventArea cards={gameState.supporterEventArea} />
+  </GameFieldDisplay>
+
+  Step 2: 盤面セットアップ UI
+
+  <BoardSetupWizard>
+    <PhaseSelector>
+      <select name="gamePhase">
+        <option value="main">メインフェイズ</option>
+        <option value="battle">バトルフェイズ</option>
+        <option value="end">エンドフェイズ</option>
+      </select>
+    </PhaseSelector>
+
+    <LifePointInput>
+      <input type="number" placeholder="自分のライフ" />
+      <input type="number" placeholder="相手のライフ" />
+    </LifePointInput>
+
+    <CardPlacement>
+      {/* 既存のCardGridを活用してカード選択・配置 */}
+      <CardSelector onCardSelect={placeCardOnField} />
+    </CardPlacement>
+  </BoardSetupWizard>
+
+  Step 3: 相談・回答システム
+
+  <ConsultationPost>
+    <GameFieldDisplay field={postData.gameState} readOnly />
+
+    <QuestionSection>
+      <h3>どうする？</h3>
+      <p>{postData.question}</p>
+      <div className="game-context">
+        <span>状況: {postData.phase}</span>
+        <span>ターン: {postData.currentPlayer}のターン</span>
+      </div>
+    </QuestionSection>
+
+    <ResponseList>
+      {responses.map(response =>
+        <PlaySuggestion 
+          key={response.id}
+          suggestion={response}
+          originalField={postData.gameState}
+        />
+      )}
+    </ResponseList>
+  </ConsultationPost>
+
+  ✨ 既存資産の活用
+
+  - CardThumbnail: フィールド上のカード表示
+  - CardGrid: カード選択UI
+  - カードデータ: 116枚全てのカード情報
+  - ReikiCard: レイキシステム
+  - 型定義: Card, ReikiCard etc.
+
+  この理解で合ってますか？まずプレイマット風のゲームフィールドUIから作り始めましょ
+  うか？
+
+> - 実際の盤面状況を正確に再現（公式プレイマット準拠）\
+  \
+  こちらについては、固定の盤面ではなく、盤面をつくるところから機能として持たせたい
+  。\
+  \
+  まだカードが置いていない状態のプレイマットがある\
+  ↓\
+  カード選択のエリアがあって、そこからドラッグアンドドロップでプレイマットにカード
+  を配置できる\
+  ↓\
+  ひとまずこれで完成。ベータ版としては、その盤面をスクショして、Xとかにポストして
+  、あなたならどうする？というのをリプライなどでやりとりできればいい。\
+  ↓\
+  長期的には、convexとかで盤面情報を共有して、Webサイト見ながら議論できると良い。\
+  \
+  どうでしょうか？？
+
+⏺ Update Todos
+  ⎿  ☐ Board Simulator機能のベータ版実装 - プレイマット + D&D + スクショ機能
+     ☐ 空のプレイマットUI実装（公式レイアウト準拠）
+     ☐ カード選択エリア実装（既存CardGridを活用）
+     ☐ ドラッグ&ドロップシステム実装
+     ☐ 盤面スクリーンショット機能実装
+
+⏺ 完璧なアプローチです！段階的で実用的な機能設計ですね。
+
+  🎯 Board Simulator 機能設計
+
+  ベータ版の完璧な要件理解
+
+  1. ✅ 空のプレイマット - 公式レイアウト準拠
+  2. ✅ カード選択エリア - 既存の116枚カードから選択
+  3. ✅ ドラッグ&ドロップ - 直感的なカード配置
+  4. ✅ スクリーンショット機能 - SNS投稿用
+  5. 🔮 将来拡張 - Convex共有システム
+
+  🛠️ 実装戦略
+
+  Phase 1: 基盤UI実装 (1-2時間)
+
+  // 新しいページ: BoardSimulator.tsx
+  <BoardSimulator>
+    <div className="grid grid-cols-3 gap-4">
+      {/* 左: カード選択エリア */}
+      <CardSelectionArea>
+        <SearchBar />
+        <FilterPanel />
+        <CardGrid 
+          cards={filteredCards}
+          draggable={true}  // 新機能
+        />
+      </CardSelectionArea>
+
+      {/* 中央: プレイマット */}
+      <PlaymatArea>
+        <Playmat 
+          layout="official"
+          allowDrop={true}
+          onCardDrop={handleCardDrop}
+        />
+      </PlaymatArea>
+
+      {/* 右: 操作パネル */}
+      <ControlPanel>
+        <ClearButton />
+        <ScreenshotButton />
+        <ShareButton />
+      </ControlPanel>
+    </div>
+  </BoardSimulator>
+
+  Phase 2: ドラッグ&ドロップ実装 (2-3時間)
+
+  // react-dnd または HTML5 Drag API活用
+  const CardThumbnailDraggable = ({ card }) => {
+    const [{ isDragging }, drag] = useDrag({
+      type: 'CARD',
+      item: { card },
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+    });
+
+    return (
+      <div 
+        ref={drag}
+        className={`cursor-move ${isDragging ? 'opacity-50' : ''}`}
+      >
+        <CardThumbnail card={card} />
+      </div>
+    );
+  };
+
+  const PlaymatSlot = ({ area, position }) => {
+    const [{ isOver }, drop] = useDrop({
+      accept: 'CARD',
+      drop: (item) => placeCard(item.card, area, position),
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+      }),
+    });
+
+    return (
+      <div 
+        ref={drop}
+        className={`playmat-slot ${isOver ? 'bg-blue-100' : ''}`}
+      >
+        {/* カード表示 or 空スロット */}
+      </div>
+    );
+  };
+
+  Phase 3: スクリーンショット機能 (1時間)
+
+  import html2canvas from 'html2canvas';
+
+  const capturePlaymat = async () => {
+    const playmateElement = document.getElementById('playmat-area');
+    const canvas = await html2canvas(playmateElement, {
+      backgroundColor: '#ffffff',
+      scale: 2, // 高解像度
+      width: 1200,
+      height: 800
+    });
+
+    // PNG形式でダウンロード
+    const link = document.createElement('a');
+    link.download = `cnp-board-${Date.now()}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+  };
+
+  🎨 プレイマットレイアウト設計
+
+  公式準拠の配置
+
+  const OfficialPlaymat = () => (
+    <div className="playmat-container bg-gray-100 p-4 rounded-lg">
+      {/* 上段 */}
+      <div className="top-row flex justify-between mb-4">
+        <DropZone area="trash" label="トラッシュ" />
+        <DropZone area="reiki" label="レイキエリア" />
+        <DropZone area="deck" label="デッキ" />
+      </div>
+
+      {/* ゲージエリア */}
+      <div className="gauge-row flex justify-center gap-4 mb-4">
+        <DropZone area="gauge1" label="ゲージ1" />
+        <DropZone area="gauge2" label="ゲージ2" />
+        <DropZone area="gauge3" label="ゲージ3" />
+      </div>
+
+      {/* ユニットエリア */}
+      <div className="unit-row flex justify-center gap-2 mb-4">
+        {[1,2,3,4,5].map(pos =>
+          <DropZone 
+            key={pos}
+            area="unit" 
+            position={pos}
+            label={`ユニット${pos}`} 
+          />
+        )}
+      </div>
+
+      {/* サポーター・イベントエリア */}
+      <div className="support-row flex justify-center mb-4">
+        <DropZone area="supporter" label="サポーター・イベント" />
+      </div>
+    </div>
+  );
+
+  🚀 既存資産の最大活用
+
+  再利用可能コンポーネント
+
+  - ✅ CardThumbnail → ドラッグ機能追加
+  - ✅ CardGrid → カード選択エリア
+  - ✅ SearchBar + FilterPanel → カード検索
+  - ✅ Card型定義 → そのまま活用
+  - ✅ 既存カードデータ → 116枚全て利用可能
+
+  新規ナビゲーション追加
+
+  // Layout.tsx への追加
+  { path: '/board-simulator', label: 'Board Simulator', icon: Layout }
+
+  📱 ベータ版のユーザーフロー
+
+  1. Board Simulator タブをクリック
+  2. 空のプレイマット を確認
+  3. 左側のカード一覧 からカードを選択
+  4. ドラッグ&ドロップ でプレイマットに配置
+  5. スクリーンショット ボタンで画像保存
+  6. X（Twitter） に投稿して「あなたならどうする？」
+
+  ⏱️ 実装予想時間
+
+  - Phase 1: 基盤UI (2時間)
+  - Phase 2: D&D実装 (3時間)
+  - Phase 3: スクショ機能 (1時間)
+  - 合計: 約6時間で完成
+
+  この方向性で実装を開始しますか？まず空のプレイマットUIから作り始めましょう！
+
+> 6. X（Twitter） に投稿して「あなたならどうする？」\
+  \
+  ここは特に意識しなくていいです。５版のスクショまででOK。\
+  \
+  2. 空のプレイマット を確認\
+  \
+  横長のプレイマットが真ん中にあって、その上に横長の細い長方形で相手手札エリア、プ
+  レイマットの下には自分の手札エリアを配置してください\
+  \
+  3. 左側のカード一覧 からカードを選択\
+  \
+  おそらく２．のエリア描画において、横長になると考えている。そのため、左にカード一
+  覧ではなく、下に縦１枚、横にスライダーを付けてメインカード、レイキカードを並べて
+  、そこからドラッグできるようにしたい\
+  \
+  4. ドラッグ&ドロップ でプレイマットに配置\
+  \
+  プレイマットに配置後にダブルクリックで時計回りに９０°カードを倒す仕組みをいれた
+  い。レストと言って、本カードゲームのルールに有る状態のため。またドラッグして一度
+  配置したカードは、またドラッグしてカード一覧に戻すことで削除できるようにしたい。
+  加えて、有識者のイメージにあるように、裏向きのカードイラストも使えるようにしてほ
+  しい。裏向きカードは次のイラストから選ぶ。[Image #1][Image #2]
+
+✻ Thinking…
+
+  ユーザーからの詳細な要件が明確になりました。以下を整理します：
+
+  1. レイアウト変更：
+    - 横長のプレイマット（中央）
+    - 相手手札エリア（プレイマット上部）
+    - 自分手札エリア（プレイマット下部）
+    - カード選択は左側ではなく、下部に横スライダー形式
+  2. カード機能：
+    - ドラッグ&ドロップでプレイマットに配置
+    - ダブルクリックで90度回転（レスト状態）
+    - ドラッグでカード一覧に戻して削除
+    - 裏向きカードの選択（2種類の画像から）
+  3. スクリーンショット機能まで実装（SNS投稿機能は不要）
+
+  画像は２つのCNP TCGの裏面カードですね。ゴールド版とグレー版のようです。
+
+  まず、TodoListを更新して、実装を開始しましょう。
+
+⏺ Update Todos
+  ⎿  ☐ Board Simulator機能のベータ版実装 - 横長プレイマット + 手札エリア + D&D + 
+       スクショ機能
+     ☐ 横長プレイマットレイアウト実装（中央配置・相手手札上部・自分手札下部）
+     ☐ 下部カードスライダー実装（メイン・レイキカード横並び）
+     ☐ D&D + ダブルクリック90度回転（レスト）+ ドラッグ削除機能
+     ☐ 裏向きカード機能実装（ゴールド・グレー2種類から選択）
+     ☐ 盤面スクリーンショット機能実装
