@@ -21,7 +21,7 @@ const BoardSimulator: React.FC = () => {
           
           {/* 左側：プレイマット（3/4幅） */}
           <div className="col-span-3 bg-white border-2 border-gray-300 rounded-lg p-4">
-            <div className="h-full grid grid-rows-6 gap-2">
+            <div className="h-full grid grid-rows-8 gap-2">
               
               {/* 上段：相手のサポーター・イベント、レイキエリア */}
               <div className="grid grid-cols-5 gap-2">
@@ -33,16 +33,29 @@ const BoardSimulator: React.FC = () => {
                 </div>
               </div>
 
-              {/* 相手のアタック・ゲージエリア */}
+              {/* 相手のアタックエリア */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-red-100 border border-red-300 rounded flex items-center justify-center">
+                  <span className="text-xs text-red-600">相手アタック3</span>
+                </div>
+                <div className="bg-red-100 border border-red-300 rounded flex items-center justify-center">
+                  <span className="text-xs text-red-600">相手アタック2</span>
+                </div>
+                <div className="bg-red-100 border border-red-300 rounded flex items-center justify-center">
+                  <span className="text-xs text-red-600">相手アタック1</span>
+                </div>
+              </div>
+
+              {/* 相手のゲージエリア */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-red-50 border border-red-200 rounded flex items-center justify-center">
-                  <span className="text-xs text-red-600">相手アタック3<br/>(ゲージ)</span>
+                  <span className="text-xs text-red-500">相手ゲージ3</span>
                 </div>
                 <div className="bg-red-50 border border-red-200 rounded flex items-center justify-center">
-                  <span className="text-xs text-red-600">相手アタック2<br/>(ゲージ)</span>
+                  <span className="text-xs text-red-500">相手ゲージ2</span>
                 </div>
                 <div className="bg-red-50 border border-red-200 rounded flex items-center justify-center">
-                  <span className="text-xs text-red-600">相手アタック1<br/>(ゲージ)</span>
+                  <span className="text-xs text-red-500">相手ゲージ1</span>
                 </div>
               </div>
 
@@ -59,16 +72,29 @@ const BoardSimulator: React.FC = () => {
                 </div>
               </div>
 
-              {/* 自分のアタック・ゲージエリア */}
+              {/* 自分のゲージエリア */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-blue-50 border border-blue-200 rounded flex items-center justify-center">
-                  <span className="text-xs text-blue-600">アタック1<br/>(ゲージ)</span>
+                  <span className="text-xs text-blue-500">ゲージ1</span>
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded flex items-center justify-center">
-                  <span className="text-xs text-blue-600">アタック2<br/>(ゲージ)</span>
+                  <span className="text-xs text-blue-500">ゲージ2</span>
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded flex items-center justify-center">
-                  <span className="text-xs text-blue-600">アタック3<br/>(ゲージ)</span>
+                  <span className="text-xs text-blue-500">ゲージ3</span>
+                </div>
+              </div>
+
+              {/* 自分のアタックエリア */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-blue-100 border border-blue-300 rounded flex items-center justify-center">
+                  <span className="text-xs text-blue-600">アタック1</span>
+                </div>
+                <div className="bg-blue-100 border border-blue-300 rounded flex items-center justify-center">
+                  <span className="text-xs text-blue-600">アタック2</span>
+                </div>
+                <div className="bg-blue-100 border border-blue-300 rounded flex items-center justify-center">
+                  <span className="text-xs text-blue-600">アタック3</span>
                 </div>
               </div>
 
