@@ -1,5 +1,5 @@
 // Board Simulator専用型定義
-import { Card, ReikiCard } from './card';
+import { Card } from './card';
 
 export interface BoardState {
   // プレイマット上のカード配置
