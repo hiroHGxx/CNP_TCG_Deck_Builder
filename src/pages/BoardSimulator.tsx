@@ -20,42 +20,47 @@ const BoardSimulator: React.FC = () => {
         <div className="grid grid-cols-4 gap-4 h-[700px]">
           
           {/* 左側：プレイマット（3/4幅） */}
-          <div className="col-span-3 bg-white border-2 border-gray-300 rounded-lg p-4">
-            <div className="h-full grid grid-rows-8 gap-2">
+          <div className="col-span-3 bg-white border-2 border-gray-300 rounded-lg p-4 relative">
+            {/* 相手エリア表示 */}
+            <div className="absolute top-2 left-2 bg-red-200 text-red-800 px-2 py-1 rounded text-xs font-semibold z-10">
+              相手
+            </div>
+            
+            <div className="h-full grid grid-rows-7 gap-2">
               
-              {/* 上段：相手のサポーター・イベント、レイキエリア */}
+              {/* 上段：サポーター・イベント、レイキエリア */}
               <div className="grid grid-cols-5 gap-2">
                 <div className="col-span-2 bg-red-100 border border-red-300 rounded flex items-center justify-center">
-                  <span className="text-xs text-red-600">相手レイキエリア</span>
+                  <span className="text-xs text-red-600">レイキエリア</span>
                 </div>
                 <div className="col-span-3 bg-red-200 border border-red-400 rounded flex items-center justify-center">
-                  <span className="text-xs text-red-700">相手サポーター・イベントエリア</span>
+                  <span className="text-xs text-red-700">サポーター・イベントエリア</span>
                 </div>
               </div>
 
-              {/* 相手のアタックエリア */}
+              {/* ゲージエリア */}
               <div className="grid grid-cols-3 gap-2">
-                <div className="bg-red-100 border border-red-300 rounded flex items-center justify-center">
-                  <span className="text-xs text-red-600">相手アタック3</span>
+                <div className="bg-red-50 border border-red-200 rounded flex items-center justify-center">
+                  <span className="text-xs text-red-500">ゲージ3</span>
                 </div>
-                <div className="bg-red-100 border border-red-300 rounded flex items-center justify-center">
-                  <span className="text-xs text-red-600">相手アタック2</span>
+                <div className="bg-red-50 border border-red-200 rounded flex items-center justify-center">
+                  <span className="text-xs text-red-500">ゲージ2</span>
                 </div>
-                <div className="bg-red-100 border border-red-300 rounded flex items-center justify-center">
-                  <span className="text-xs text-red-600">相手アタック1</span>
+                <div className="bg-red-50 border border-red-200 rounded flex items-center justify-center">
+                  <span className="text-xs text-red-500">ゲージ1</span>
                 </div>
               </div>
 
-              {/* 相手のゲージエリア */}
+              {/* アタックエリア */}
               <div className="grid grid-cols-3 gap-2">
-                <div className="bg-red-50 border border-red-200 rounded flex items-center justify-center">
-                  <span className="text-xs text-red-500">相手ゲージ3</span>
+                <div className="bg-red-100 border border-red-300 rounded flex items-center justify-center">
+                  <span className="text-xs text-red-600">アタック3</span>
                 </div>
-                <div className="bg-red-50 border border-red-200 rounded flex items-center justify-center">
-                  <span className="text-xs text-red-500">相手ゲージ2</span>
+                <div className="bg-red-100 border border-red-300 rounded flex items-center justify-center">
+                  <span className="text-xs text-red-600">アタック2</span>
                 </div>
-                <div className="bg-red-50 border border-red-200 rounded flex items-center justify-center">
-                  <span className="text-xs text-red-500">相手ゲージ1</span>
+                <div className="bg-red-100 border border-red-300 rounded flex items-center justify-center">
+                  <span className="text-xs text-red-600">アタック1</span>
                 </div>
               </div>
 
@@ -72,20 +77,7 @@ const BoardSimulator: React.FC = () => {
                 </div>
               </div>
 
-              {/* 自分のゲージエリア */}
-              <div className="grid grid-cols-3 gap-2">
-                <div className="bg-blue-50 border border-blue-200 rounded flex items-center justify-center">
-                  <span className="text-xs text-blue-500">ゲージ1</span>
-                </div>
-                <div className="bg-blue-50 border border-blue-200 rounded flex items-center justify-center">
-                  <span className="text-xs text-blue-500">ゲージ2</span>
-                </div>
-                <div className="bg-blue-50 border border-blue-200 rounded flex items-center justify-center">
-                  <span className="text-xs text-blue-500">ゲージ3</span>
-                </div>
-              </div>
-
-              {/* 自分のアタックエリア */}
+              {/* アタックエリア */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-blue-100 border border-blue-300 rounded flex items-center justify-center">
                   <span className="text-xs text-blue-600">アタック1</span>
@@ -98,6 +90,19 @@ const BoardSimulator: React.FC = () => {
                 </div>
               </div>
 
+              {/* ゲージエリア */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-blue-50 border border-blue-200 rounded flex items-center justify-center">
+                  <span className="text-xs text-blue-500">ゲージ1</span>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded flex items-center justify-center">
+                  <span className="text-xs text-blue-500">ゲージ2</span>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded flex items-center justify-center">
+                  <span className="text-xs text-blue-500">ゲージ3</span>
+                </div>
+              </div>
+
               {/* 自分のサポーター・イベント、レイキエリア */}
               <div className="grid grid-cols-5 gap-2">
                 <div className="col-span-3 bg-blue-200 border border-blue-400 rounded flex items-center justify-center">
@@ -107,11 +112,11 @@ const BoardSimulator: React.FC = () => {
                   <span className="text-xs text-blue-600">レイキエリア</span>
                 </div>
               </div>
+            </div>
 
-              {/* 空きスペース（将来の拡張用） */}
-              <div className="bg-gray-50 border border-gray-200 rounded flex items-center justify-center">
-                <span className="text-xs text-gray-500">（空きエリア）</span>
-              </div>
+            {/* 自分エリア表示 */}
+            <div className="absolute bottom-2 right-2 bg-blue-200 text-blue-800 px-2 py-1 rounded text-xs font-semibold z-10">
+              自分
             </div>
           </div>
 
