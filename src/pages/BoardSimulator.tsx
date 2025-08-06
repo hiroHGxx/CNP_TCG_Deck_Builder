@@ -48,20 +48,20 @@ const BoardSimulator: React.FC = () => {
     { id: 'opponent-gauge-2', name: '相手ゲージ2', x: 282, y: 110, width: 136, height: 80, color: 'bg-red-50 border-red-200' },
     { id: 'opponent-gauge-3', name: '相手ゲージ3', x: 112, y: 110, width: 136, height: 80, color: 'bg-red-50 border-red-200' },
     
-    // 相手アタックエリア（ゲージと接続、縦幅20%増加：80→96）
-    { id: 'opponent-attack-1', name: '相手アタック1', x: 452, y: 190, width: 136, height: 96, color: 'bg-red-100 border-red-300' },
-    { id: 'opponent-attack-2', name: '相手アタック2', x: 282, y: 190, width: 136, height: 96, color: 'bg-red-100 border-red-300' },
-    { id: 'opponent-attack-3', name: '相手アタック3', x: 112, y: 190, width: 136, height: 96, color: 'bg-red-100 border-red-300' },
+    // 相手アタックエリア（ゲージと接続、縦幅20%増加：80→96、横幅80に戻す）
+    { id: 'opponent-attack-1', name: '相手アタック1', x: 480, y: 190, width: 80, height: 96, color: 'bg-red-100 border-red-300' },
+    { id: 'opponent-attack-2', name: '相手アタック2', x: 310, y: 190, width: 80, height: 96, color: 'bg-red-100 border-red-300' },
+    { id: 'opponent-attack-3', name: '相手アタック3', x: 140, y: 190, width: 80, height: 96, color: 'bg-red-100 border-red-300' },
     
-    // 共有拠点エリア（中央境界線）- 円形表示
-    { id: 'base-1', name: '拠点1', x: 112, y: 300, width: 136, height: 80, color: 'bg-yellow-200 border-yellow-400', shape: 'circle' },
-    { id: 'base-2', name: '拠点2', x: 282, y: 300, width: 136, height: 80, color: 'bg-yellow-200 border-yellow-400', shape: 'circle' },
-    { id: 'base-3', name: '拠点3', x: 452, y: 300, width: 136, height: 80, color: 'bg-yellow-200 border-yellow-400', shape: 'circle' },
+    // 共有拠点エリア（中央境界線）- 80×80円形表示
+    { id: 'base-1', name: '拠点1', x: 140, y: 300, width: 80, height: 80, color: 'bg-yellow-200 border-yellow-400', shape: 'circle' },
+    { id: 'base-2', name: '拠点2', x: 310, y: 300, width: 80, height: 80, color: 'bg-yellow-200 border-yellow-400', shape: 'circle' },
+    { id: 'base-3', name: '拠点3', x: 480, y: 300, width: 80, height: 80, color: 'bg-yellow-200 border-yellow-400', shape: 'circle' },
     
-    // 自分アタックエリア（ゲージと接続、縦幅20%増加：80→96）
-    { id: 'player-attack-1', name: '自分アタック1', x: 112, y: 394, width: 136, height: 96, color: 'bg-blue-100 border-blue-300' },
-    { id: 'player-attack-2', name: '自分アタック2', x: 282, y: 394, width: 136, height: 96, color: 'bg-blue-100 border-blue-300' },
-    { id: 'player-attack-3', name: '自分アタック3', x: 452, y: 394, width: 136, height: 96, color: 'bg-blue-100 border-blue-300' },
+    // 自分アタックエリア（ゲージと接続、縦幅20%増加：80→96、横幅80に戻す）
+    { id: 'player-attack-1', name: '自分アタック1', x: 140, y: 394, width: 80, height: 96, color: 'bg-blue-100 border-blue-300' },
+    { id: 'player-attack-2', name: '自分アタック2', x: 310, y: 394, width: 80, height: 96, color: 'bg-blue-100 border-blue-300' },
+    { id: 'player-attack-3', name: '自分アタック3', x: 480, y: 394, width: 80, height: 96, color: 'bg-blue-100 border-blue-300' },
     
     // 自分ゲージエリア（アタックと接続、横幅70%増加：80→136）
     { id: 'player-gauge-1', name: '自分ゲージ1', x: 112, y: 490, width: 136, height: 80, color: 'bg-blue-50 border-blue-200' },
