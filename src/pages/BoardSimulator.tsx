@@ -71,6 +71,10 @@ const BoardSimulator: React.FC = () => {
     // 自分エリア（下段）：サポーター・イベント、レイキエリア
     { id: 'player-support', name: 'サポーター・イベント', x: 100, y: 610, width: 400, height: 60, color: 'bg-blue-200 border-blue-400' },
     { id: 'player-reiki', name: 'レイキ', x: 520, y: 610, width: 160, height: 60, color: 'bg-blue-100 border-blue-300' },
+    
+    // 手札エリア（レイキエリアより右側）- 縦：ゲージ+アタック(176px)、横：サポーター70%(280px)
+    { id: 'opponent-hand', name: '手札', x: 700, y: 110, width: 280, height: 176, color: 'bg-red-100 border-red-300' },
+    { id: 'player-hand', name: '手札', x: 700, y: 394, width: 280, height: 176, color: 'bg-blue-100 border-blue-300' },
   ];
 
   // カードがどのエリアに配置されたかを判定する関数
@@ -130,12 +134,12 @@ const BoardSimulator: React.FC = () => {
           }
         }}
       >
-        {/* 中央分割線（拠点を通る点線）- エリアの下レイヤー */}
+        {/* 中央分割線（拠点を通る点線）- エリアの下レイヤー、5%延長 */}
         <div 
           className="absolute pointer-events-none"
           style={{
-            left: '10%',
-            right: '10%',
+            left: '7.5%',
+            right: '7.5%',
             top: 340,
             height: 2,
             backgroundImage: 'repeating-linear-gradient(to right, #6b7280 0, #6b7280 8px, transparent 8px, transparent 16px)',
@@ -143,16 +147,24 @@ const BoardSimulator: React.FC = () => {
           }}
         />
 
-        {/* 相手・自分エリア表示テキスト */}
+        {/* 相手・自分エリア表示テキスト - サポーターエリア左端に右端合わせ */}
         <div 
-          className="absolute left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded text-xs font-semibold text-red-600 pointer-events-none" 
-          style={{ top: 320, zIndex: 15 }}
+          className="absolute bg-white px-2 py-1 rounded text-xs font-semibold text-red-600 pointer-events-none" 
+          style={{ 
+            top: 310, 
+            right: `calc(100% - 100px)`, // サポーターエリアの左端(x:100)に右端を合わせ
+            zIndex: 15 
+          }}
         >
           相手
         </div>
         <div 
-          className="absolute left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded text-xs font-semibold text-blue-600 pointer-events-none" 
-          style={{ top: 385, zIndex: 15 }}
+          className="absolute bg-white px-2 py-1 rounded text-xs font-semibold text-blue-600 pointer-events-none" 
+          style={{ 
+            top: 370, 
+            right: `calc(100% - 100px)`, // サポーターエリアの左端(x:100)に右端を合わせ
+            zIndex: 15 
+          }}
         >
           自分
         </div>
@@ -171,8 +183,9 @@ const BoardSimulator: React.FC = () => {
               height: area.height,
               zIndex: area.shape === 'circle' ? 10 : 8, // 拠点を点線より上に
               ...(area.shape === 'circle' ? {
-                // 二重丸効果のためのボックスシャドウ
-                boxShadow: `inset 0 0 0 3px ${area.color.includes('yellow-200') ? '#fbbf24' : '#ffffff'}`
+                // 二重丸効果のためのボックスシャドウ + 背景で点線を隠す
+                boxShadow: `inset 0 0 0 3px ${area.color.includes('yellow-200') ? '#fbbf24' : '#ffffff'}`,
+                backgroundColor: '#fde68a' // 拠点の背景色で点線を隠す
               } : {})
             }}
           >
