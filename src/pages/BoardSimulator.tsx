@@ -6,6 +6,17 @@ import type { Card } from '@/types/card';
 
 type CardType = 'main' | 'reiki';
 
+interface AreaInfo {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+  shape?: 'circle' | 'rectangle';
+}
+
 interface PlacedCard {
   id: string;
   card?: Card;
@@ -27,35 +38,35 @@ const BoardSimulator: React.FC = () => {
   const reikiColors: ReikiColor[] = ['red', 'blue', 'green', 'yellow'];
 
   // エリア情報定義（元のプレイマットレイアウトに基づく正確な配置）
-  const playmartAreas = [
+  const playmartAreas: AreaInfo[] = [
     // 相手エリア（上段）：サポーター・イベント、レイキエリア
     { id: 'opponent-reiki', name: '相手レイキ', x: 520, y: 30, width: 160, height: 60, color: 'bg-red-100 border-red-300' },
     { id: 'opponent-support', name: '相手サポーター・イベント', x: 100, y: 30, width: 400, height: 60, color: 'bg-red-200 border-red-400' },
     
-    // 相手ゲージエリア
-    { id: 'opponent-gauge-1', name: '相手ゲージ1', x: 480, y: 110, width: 80, height: 80, color: 'bg-red-50 border-red-200' },
-    { id: 'opponent-gauge-2', name: '相手ゲージ2', x: 310, y: 110, width: 80, height: 80, color: 'bg-red-50 border-red-200' },
-    { id: 'opponent-gauge-3', name: '相手ゲージ3', x: 140, y: 110, width: 80, height: 80, color: 'bg-red-50 border-red-200' },
+    // 相手ゲージエリア（横幅70%増加：80→136、左右に28px拡張）
+    { id: 'opponent-gauge-1', name: '相手ゲージ1', x: 452, y: 110, width: 136, height: 80, color: 'bg-red-50 border-red-200' },
+    { id: 'opponent-gauge-2', name: '相手ゲージ2', x: 282, y: 110, width: 136, height: 80, color: 'bg-red-50 border-red-200' },
+    { id: 'opponent-gauge-3', name: '相手ゲージ3', x: 112, y: 110, width: 136, height: 80, color: 'bg-red-50 border-red-200' },
     
-    // 相手アタックエリア
-    { id: 'opponent-attack-1', name: '相手アタック1', x: 480, y: 210, width: 80, height: 80, color: 'bg-red-100 border-red-300' },
-    { id: 'opponent-attack-2', name: '相手アタック2', x: 310, y: 210, width: 80, height: 80, color: 'bg-red-100 border-red-300' },
-    { id: 'opponent-attack-3', name: '相手アタック3', x: 140, y: 210, width: 80, height: 80, color: 'bg-red-100 border-red-300' },
+    // 相手アタックエリア（ゲージと接続、縦幅20%増加：80→96）
+    { id: 'opponent-attack-1', name: '相手アタック1', x: 452, y: 190, width: 136, height: 96, color: 'bg-red-100 border-red-300' },
+    { id: 'opponent-attack-2', name: '相手アタック2', x: 282, y: 190, width: 136, height: 96, color: 'bg-red-100 border-red-300' },
+    { id: 'opponent-attack-3', name: '相手アタック3', x: 112, y: 190, width: 136, height: 96, color: 'bg-red-100 border-red-300' },
     
-    // 共有拠点エリア（中央境界線）
-    { id: 'base-1', name: '拠点1', x: 140, y: 310, width: 80, height: 80, color: 'bg-yellow-200 border-yellow-400' },
-    { id: 'base-2', name: '拠点2', x: 310, y: 310, width: 80, height: 80, color: 'bg-yellow-200 border-yellow-400' },
-    { id: 'base-3', name: '拠点3', x: 480, y: 310, width: 80, height: 80, color: 'bg-yellow-200 border-yellow-400' },
+    // 共有拠点エリア（中央境界線）- 円形表示
+    { id: 'base-1', name: '拠点1', x: 112, y: 300, width: 136, height: 80, color: 'bg-yellow-200 border-yellow-400', shape: 'circle' },
+    { id: 'base-2', name: '拠点2', x: 282, y: 300, width: 136, height: 80, color: 'bg-yellow-200 border-yellow-400', shape: 'circle' },
+    { id: 'base-3', name: '拠点3', x: 452, y: 300, width: 136, height: 80, color: 'bg-yellow-200 border-yellow-400', shape: 'circle' },
     
-    // 自分アタックエリア
-    { id: 'player-attack-1', name: '自分アタック1', x: 140, y: 410, width: 80, height: 80, color: 'bg-blue-100 border-blue-300' },
-    { id: 'player-attack-2', name: '自分アタック2', x: 310, y: 410, width: 80, height: 80, color: 'bg-blue-100 border-blue-300' },
-    { id: 'player-attack-3', name: '自分アタック3', x: 480, y: 410, width: 80, height: 80, color: 'bg-blue-100 border-blue-300' },
+    // 自分アタックエリア（ゲージと接続、縦幅20%増加：80→96）
+    { id: 'player-attack-1', name: '自分アタック1', x: 112, y: 394, width: 136, height: 96, color: 'bg-blue-100 border-blue-300' },
+    { id: 'player-attack-2', name: '自分アタック2', x: 282, y: 394, width: 136, height: 96, color: 'bg-blue-100 border-blue-300' },
+    { id: 'player-attack-3', name: '自分アタック3', x: 452, y: 394, width: 136, height: 96, color: 'bg-blue-100 border-blue-300' },
     
-    // 自分ゲージエリア
-    { id: 'player-gauge-1', name: '自分ゲージ1', x: 140, y: 510, width: 80, height: 80, color: 'bg-blue-50 border-blue-200' },
-    { id: 'player-gauge-2', name: '自分ゲージ2', x: 310, y: 510, width: 80, height: 80, color: 'bg-blue-50 border-blue-200' },
-    { id: 'player-gauge-3', name: '自分ゲージ3', x: 480, y: 510, width: 80, height: 80, color: 'bg-blue-50 border-blue-200' },
+    // 自分ゲージエリア（アタックと接続、横幅70%増加：80→136）
+    { id: 'player-gauge-1', name: '自分ゲージ1', x: 112, y: 490, width: 136, height: 80, color: 'bg-blue-50 border-blue-200' },
+    { id: 'player-gauge-2', name: '自分ゲージ2', x: 282, y: 490, width: 136, height: 80, color: 'bg-blue-50 border-blue-200' },
+    { id: 'player-gauge-3', name: '自分ゲージ3', x: 452, y: 490, width: 136, height: 80, color: 'bg-blue-50 border-blue-200' },
     
     // 自分エリア（下段）：サポーター・イベント、レイキエリア
     { id: 'player-support', name: '自分サポーター・イベント', x: 100, y: 610, width: 400, height: 60, color: 'bg-blue-200 border-blue-400' },
@@ -123,12 +134,18 @@ const BoardSimulator: React.FC = () => {
         {playmartAreas.map((area) => (
           <div
             key={area.id}
-            className={`absolute border-2 rounded-lg ${area.color} opacity-60 pointer-events-none`}
+            className={`absolute border-2 ${area.color} opacity-60 pointer-events-none ${
+              area.shape === 'circle' ? 'rounded-full' : 'rounded-lg'
+            }`}
             style={{
               left: area.x,
               top: area.y,
               width: area.width,
               height: area.height,
+              ...(area.shape === 'circle' ? {
+                // 二重丸効果のためのボックスシャドウ
+                boxShadow: `inset 0 0 0 3px ${area.color.includes('yellow-200') ? '#fbbf24' : '#ffffff'}`
+              } : {})
             }}
           >
             {/* エリア名表示 */}
@@ -139,12 +156,6 @@ const BoardSimulator: React.FC = () => {
             </div>
           </div>
         ))}
-
-        {/* グリッド背景の説明 */}
-        <div className="absolute top-4 left-4 bg-white bg-opacity-95 px-3 py-2 rounded-lg shadow-sm z-20">
-          <p className="text-sm text-gray-700 font-medium">自由配置プレイマット</p>
-          <p className="text-xs text-gray-500">エリアは目安です。どこでも自由に配置できます</p>
-        </div>
 
         {/* 配置されたカードの表示 */}
         {placedCards.map((placedCard) => (
