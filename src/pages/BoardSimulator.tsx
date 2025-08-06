@@ -14,7 +14,9 @@ interface PlacedCard {
     name: string;
     imageUrl: string;
   };
-  position: string;
+  x: number;
+  y: number;
+  areaId?: string; // どのエリアに配置されたかの情報（オプション）
 }
 
 const BoardSimulator: React.FC = () => {
@@ -24,10 +26,61 @@ const BoardSimulator: React.FC = () => {
   
   const reikiColors: ReikiColor[] = ['red', 'blue', 'green', 'yellow'];
 
-  const handleCardDrop = (position: string, data: any) => {
+  // エリア情報定義（元のプレイマットレイアウトに基づく正確な配置）
+  const playmartAreas = [
+    // 相手エリア（上段）：サポーター・イベント、レイキエリア
+    { id: 'opponent-reiki', name: '相手レイキ', x: 520, y: 30, width: 160, height: 60, color: 'bg-red-100 border-red-300' },
+    { id: 'opponent-support', name: '相手サポーター・イベント', x: 100, y: 30, width: 400, height: 60, color: 'bg-red-200 border-red-400' },
+    
+    // 相手ゲージエリア
+    { id: 'opponent-gauge-1', name: '相手ゲージ1', x: 480, y: 110, width: 80, height: 80, color: 'bg-red-50 border-red-200' },
+    { id: 'opponent-gauge-2', name: '相手ゲージ2', x: 310, y: 110, width: 80, height: 80, color: 'bg-red-50 border-red-200' },
+    { id: 'opponent-gauge-3', name: '相手ゲージ3', x: 140, y: 110, width: 80, height: 80, color: 'bg-red-50 border-red-200' },
+    
+    // 相手アタックエリア
+    { id: 'opponent-attack-1', name: '相手アタック1', x: 480, y: 210, width: 80, height: 80, color: 'bg-red-100 border-red-300' },
+    { id: 'opponent-attack-2', name: '相手アタック2', x: 310, y: 210, width: 80, height: 80, color: 'bg-red-100 border-red-300' },
+    { id: 'opponent-attack-3', name: '相手アタック3', x: 140, y: 210, width: 80, height: 80, color: 'bg-red-100 border-red-300' },
+    
+    // 共有拠点エリア（中央境界線）
+    { id: 'base-1', name: '拠点1', x: 140, y: 310, width: 80, height: 80, color: 'bg-yellow-200 border-yellow-400' },
+    { id: 'base-2', name: '拠点2', x: 310, y: 310, width: 80, height: 80, color: 'bg-yellow-200 border-yellow-400' },
+    { id: 'base-3', name: '拠点3', x: 480, y: 310, width: 80, height: 80, color: 'bg-yellow-200 border-yellow-400' },
+    
+    // 自分アタックエリア
+    { id: 'player-attack-1', name: '自分アタック1', x: 140, y: 410, width: 80, height: 80, color: 'bg-blue-100 border-blue-300' },
+    { id: 'player-attack-2', name: '自分アタック2', x: 310, y: 410, width: 80, height: 80, color: 'bg-blue-100 border-blue-300' },
+    { id: 'player-attack-3', name: '自分アタック3', x: 480, y: 410, width: 80, height: 80, color: 'bg-blue-100 border-blue-300' },
+    
+    // 自分ゲージエリア
+    { id: 'player-gauge-1', name: '自分ゲージ1', x: 140, y: 510, width: 80, height: 80, color: 'bg-blue-50 border-blue-200' },
+    { id: 'player-gauge-2', name: '自分ゲージ2', x: 310, y: 510, width: 80, height: 80, color: 'bg-blue-50 border-blue-200' },
+    { id: 'player-gauge-3', name: '自分ゲージ3', x: 480, y: 510, width: 80, height: 80, color: 'bg-blue-50 border-blue-200' },
+    
+    // 自分エリア（下段）：サポーター・イベント、レイキエリア
+    { id: 'player-support', name: '自分サポーター・イベント', x: 100, y: 610, width: 400, height: 60, color: 'bg-blue-200 border-blue-400' },
+    { id: 'player-reiki', name: '自分レイキ', x: 520, y: 610, width: 160, height: 60, color: 'bg-blue-100 border-blue-300' },
+  ];
+
+  // カードがどのエリアに配置されたかを判定する関数
+  const getAreaFromPosition = (x: number, y: number): string | undefined => {
+    for (const area of playmartAreas) {
+      if (x >= area.x && x <= area.x + area.width &&
+          y >= area.y && y <= area.y + area.height) {
+        return area.id;
+      }
+    }
+    return undefined; // どのエリアにも属さない場合
+  };
+
+  const handleCardDrop = (x: number, y: number, data: any) => {
+    const areaId = getAreaFromPosition(x, y);
+    
     const newCard: PlacedCard = {
-      id: `${position}-${Date.now()}`,
-      position,
+      id: `card-${Date.now()}`,
+      x,
+      y,
+      areaId, // エリア情報を追加
       ...(data.type === 'main-card' 
         ? { card: data.card }
         : { reikiData: { color: data.color, name: data.name, imageUrl: data.imageUrl } }
@@ -35,62 +88,95 @@ const BoardSimulator: React.FC = () => {
     };
     
     setPlacedCards(prev => [...prev, newCard]);
-    console.log('✅ カード配置:', newCard);
-  };
-
-  const getCardsInPosition = (position: string) => {
-    return placedCards.filter(card => card.position === position);
-  };
-
-  const DropZone: React.FC<{
-    position: string;
-    label: string;
-    bgColor: string;
-    borderColor: string;
-    textColor: string;
-    hoverBg: string;
-    hoverBorder: string;
-  }> = ({ position, label, bgColor, borderColor, textColor, hoverBg, hoverBorder }) => {
-    const cardsInThisPosition = getCardsInPosition(position);
     
+    // エリア情報を含むログ出力
+    const areaName = areaId ? playmartAreas.find(area => area.id === areaId)?.name : 'フリーエリア';
+    console.log('✅ カード配置:', {
+      ...newCard,
+      areaName
+    });
+  };
+
+  // 自由配置プレイマットコンポーネント（エリア背景付き）
+  const FreeFormPlaymat: React.FC = () => {
     return (
       <div 
-        className={`${bgColor} border ${borderColor} rounded flex flex-col items-center justify-center min-h-[60px] relative transition-colors hover:${hoverBg} p-1`}
+        className="w-full h-full bg-gray-50 border-2 border-gray-300 rounded-lg relative overflow-hidden"
         onDragOver={(e) => {
           e.preventDefault();
           e.dataTransfer.dropEffect = 'copy';
-          e.currentTarget.classList.add(hoverBg.replace('hover:', ''), hoverBorder, 'shadow-lg');
-        }}
-        onDragLeave={(e) => {
-          e.currentTarget.classList.remove(hoverBg.replace('hover:', ''), hoverBorder, 'shadow-lg');
         }}
         onDrop={(e) => {
           e.preventDefault();
-          e.currentTarget.classList.remove(hoverBg.replace('hover:', ''), hoverBorder, 'shadow-lg');
           try {
             const data = JSON.parse(e.dataTransfer.getData('application/json'));
-            handleCardDrop(position, data);
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            handleCardDrop(x, y, data);
           } catch (error) {
             console.error('❌ ドロップデータ解析エラー:', error);
           }
         }}
       >
-        {cardsInThisPosition.length === 0 ? (
-          <span className={`text-xs ${textColor} pointer-events-none`}>{label}</span>
-        ) : (
-          <div className="flex flex-wrap gap-1 w-full h-full overflow-hidden">
-            {cardsInThisPosition.map((placedCard, index) => (
-              <div key={placedCard.id} className="w-8 h-8 relative">
-                <img
-                  src={placedCard.card?.imageUrl || placedCard.reikiData?.imageUrl || ''}
-                  alt={placedCard.card?.name || placedCard.reikiData?.name || ''}
-                  className="w-full h-full object-cover rounded border"
-                  style={{ zIndex: index }}
-                />
-              </div>
-            ))}
+        {/* エリア背景描画 */}
+        {playmartAreas.map((area) => (
+          <div
+            key={area.id}
+            className={`absolute border-2 rounded-lg ${area.color} opacity-60 pointer-events-none`}
+            style={{
+              left: area.x,
+              top: area.y,
+              width: area.width,
+              height: area.height,
+            }}
+          >
+            {/* エリア名表示 */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xs font-medium text-gray-700 text-center px-1">
+                {area.name}
+              </span>
+            </div>
           </div>
-        )}
+        ))}
+
+        {/* グリッド背景の説明 */}
+        <div className="absolute top-4 left-4 bg-white bg-opacity-95 px-3 py-2 rounded-lg shadow-sm z-20">
+          <p className="text-sm text-gray-700 font-medium">自由配置プレイマット</p>
+          <p className="text-xs text-gray-500">エリアは目安です。どこでも自由に配置できます</p>
+        </div>
+
+        {/* 配置されたカードの表示 */}
+        {placedCards.map((placedCard) => (
+          <div
+            key={placedCard.id}
+            className="absolute w-16 h-20 border-2 border-white rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+            style={{
+              left: placedCard.x - 32, // カード幅の半分だけオフセット
+              top: placedCard.y - 40,  // カード高さの半分だけオフセット
+              zIndex: 30
+            }}
+            onClick={() => {
+              // カード削除機能（クリックで削除）
+              setPlacedCards(prev => prev.filter(card => card.id !== placedCard.id));
+            }}
+            title={`${placedCard.card?.name || placedCard.reikiData?.name || ''} | エリア: ${
+              placedCard.areaId ? playmartAreas.find(area => area.id === placedCard.areaId)?.name : 'フリーエリア'
+            } | クリックで削除`}
+          >
+            <img
+              src={placedCard.card?.imageUrl || placedCard.reikiData?.imageUrl || ''}
+              alt={placedCard.card?.name || placedCard.reikiData?.name || ''}
+              className="w-full h-full object-cover rounded-lg"
+            />
+            {/* カード名表示 */}
+            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white text-xs p-1 rounded-b-lg">
+              <div className="truncate">
+                {placedCard.card?.name || placedCard.reikiData?.name || ''}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     );
   };
@@ -108,278 +194,10 @@ const BoardSimulator: React.FC = () => {
         </div>
       </div>
 
-      {/* メインレイアウト：左側プレイマット、右側手札エリア */}
+      {/* メインレイアウト：自由配置プレイマット */}
       <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-4 gap-4 h-[700px]">
-          
-          {/* 左側：プレイマット（3/4幅） */}
-          <div className="col-span-3 bg-white border-2 border-gray-300 rounded-lg p-4 relative">
-            {/* 相手エリア表示 */}
-            <div className="absolute top-2 left-2 bg-red-200 text-red-800 px-2 py-1 rounded text-xs font-semibold z-10">
-              相手
-            </div>
-            
-            <div className="h-full grid grid-rows-[1fr_1.3fr_1.3fr_1fr_1.3fr_1.3fr_1fr] gap-2">
-              
-              {/* 上段：サポーター・イベント、レイキエリア */}
-              <div className="grid grid-cols-5 gap-2">
-                <div className="col-span-2">
-                  <DropZone
-                    position="opponent-reiki"
-                    label="レイキエリア"
-                    bgColor="bg-red-100"
-                    borderColor="border-red-300"
-                    textColor="text-red-600"
-                    hoverBg="bg-red-200"
-                    hoverBorder="border-red-400"
-                  />
-                </div>
-                <div className="col-span-3">
-                  <DropZone
-                    position="opponent-support"
-                    label="サポーター・イベントエリア"
-                    bgColor="bg-red-200"
-                    borderColor="border-red-400"
-                    textColor="text-red-700"
-                    hoverBg="bg-red-300"
-                    hoverBorder="border-red-500"
-                  />
-                </div>
-              </div>
-
-              {/* ゲージエリア（縦30%増・アタックエリアに幅統一） */}
-              <div className="flex justify-center">
-                <div className="grid grid-cols-3 gap-4 w-[70%]">
-                  <DropZone
-                    position="opponent-gauge-3"
-                    label="ゲージ3"
-                    bgColor="bg-red-50"
-                    borderColor="border-red-200"
-                    textColor="text-red-500"
-                    hoverBg="bg-red-100"
-                    hoverBorder="border-red-300"
-                  />
-                  <DropZone
-                    position="opponent-gauge-2"
-                    label="ゲージ2"
-                    bgColor="bg-red-50"
-                    borderColor="border-red-200"
-                    textColor="text-red-500"
-                    hoverBg="bg-red-100"
-                    hoverBorder="border-red-300"
-                  />
-                  <DropZone
-                    position="opponent-gauge-1"
-                    label="ゲージ1"
-                    bgColor="bg-red-50"
-                    borderColor="border-red-200"
-                    textColor="text-red-500"
-                    hoverBg="bg-red-100"
-                    hoverBorder="border-red-300"
-                  />
-                </div>
-              </div>
-
-              {/* アタックエリア（縦30%増・横30%短縮・間隔2倍） */}
-              <div className="flex justify-center">
-                <div className="grid grid-cols-3 gap-4 w-[70%]">
-                  <DropZone
-                    position="opponent-attack-3"
-                    label="アタック3"
-                    bgColor="bg-red-100"
-                    borderColor="border-red-300"
-                    textColor="text-red-600"
-                    hoverBg="bg-red-200"
-                    hoverBorder="border-red-400"
-                  />
-                  <DropZone
-                    position="opponent-attack-2"
-                    label="アタック2"
-                    bgColor="bg-red-100"
-                    borderColor="border-red-300"
-                    textColor="text-red-600"
-                    hoverBg="bg-red-200"
-                    hoverBorder="border-red-400"
-                  />
-                  <DropZone
-                    position="opponent-attack-1"
-                    label="アタック1"
-                    bgColor="bg-red-100"
-                    borderColor="border-red-300"
-                    textColor="text-red-600"
-                    hoverBg="bg-red-200"
-                    hoverBorder="border-red-400"
-                  />
-                </div>
-              </div>
-
-              {/* 共有拠点エリア（境界線上・アタックエリアに幅統一） */}
-              <div className="flex justify-center border-t-2 border-b-2 border-gray-400 bg-yellow-50 py-2">
-                <div className="grid grid-cols-3 gap-4 w-[70%]">
-                  <DropZone
-                    position="base-1"
-                    label="拠点1"
-                    bgColor="bg-yellow-200"
-                    borderColor="border-yellow-400"
-                    textColor="text-yellow-800"
-                    hoverBg="bg-yellow-300"
-                    hoverBorder="border-yellow-500"
-                  />
-                  <DropZone
-                    position="base-2"
-                    label="拠点2"
-                    bgColor="bg-yellow-200"
-                    borderColor="border-yellow-400"
-                    textColor="text-yellow-800"
-                    hoverBg="bg-yellow-300"
-                    hoverBorder="border-yellow-500"
-                  />
-                  <DropZone
-                    position="base-3"
-                    label="拠点3"
-                    bgColor="bg-yellow-200"
-                    borderColor="border-yellow-400"
-                    textColor="text-yellow-800"
-                    hoverBg="bg-yellow-300"
-                    hoverBorder="border-yellow-500"
-                  />
-                </div>
-              </div>
-
-              {/* アタックエリア（縦30%増・横30%短縮・間隔2倍） */}
-              <div className="flex justify-center">
-                <div className="grid grid-cols-3 gap-4 w-[70%]">
-                  <DropZone
-                    position="player-attack-1"
-                    label="アタック1"
-                    bgColor="bg-blue-100"
-                    borderColor="border-blue-300"
-                    textColor="text-blue-600"
-                    hoverBg="bg-blue-200"
-                    hoverBorder="border-blue-400"
-                  />
-                  <DropZone
-                    position="player-attack-2"
-                    label="アタック2"
-                    bgColor="bg-blue-100"
-                    borderColor="border-blue-300"
-                    textColor="text-blue-600"
-                    hoverBg="bg-blue-200"
-                    hoverBorder="border-blue-400"
-                  />
-                  <DropZone
-                    position="player-attack-3"
-                    label="アタック3"
-                    bgColor="bg-blue-100"
-                    borderColor="border-blue-300"
-                    textColor="text-blue-600"
-                    hoverBg="bg-blue-200"
-                    hoverBorder="border-blue-400"
-                  />
-                </div>
-              </div>
-
-              {/* ゲージエリア（縦30%増・アタックエリアに幅統一） */}
-              <div className="flex justify-center">
-                <div className="grid grid-cols-3 gap-4 w-[70%]">
-                  <DropZone
-                    position="player-gauge-1"
-                    label="ゲージ1"
-                    bgColor="bg-blue-50"
-                    borderColor="border-blue-200"
-                    textColor="text-blue-500"
-                    hoverBg="bg-blue-100"
-                    hoverBorder="border-blue-300"
-                  />
-                  <DropZone
-                    position="player-gauge-2"
-                    label="ゲージ2"
-                    bgColor="bg-blue-50"
-                    borderColor="border-blue-200"
-                    textColor="text-blue-500"
-                    hoverBg="bg-blue-100"
-                    hoverBorder="border-blue-300"
-                  />
-                  <DropZone
-                    position="player-gauge-3"
-                    label="ゲージ3"
-                    bgColor="bg-blue-50"
-                    borderColor="border-blue-200"
-                    textColor="text-blue-500"
-                    hoverBg="bg-blue-100"
-                    hoverBorder="border-blue-300"
-                  />
-                </div>
-              </div>
-
-              {/* 自分のサポーター・イベント、レイキエリア */}
-              <div className="grid grid-cols-5 gap-2">
-                <div className="col-span-3">
-                  <DropZone
-                    position="player-support"
-                    label="サポーター・イベントエリア"
-                    bgColor="bg-blue-200"
-                    borderColor="border-blue-400"
-                    textColor="text-blue-700"
-                    hoverBg="bg-blue-300"
-                    hoverBorder="border-blue-500"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <DropZone
-                    position="player-reiki"
-                    label="レイキエリア"
-                    bgColor="bg-blue-100"
-                    borderColor="border-blue-300"
-                    textColor="text-blue-600"
-                    hoverBg="bg-blue-200"
-                    hoverBorder="border-blue-400"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* 自分エリア表示 */}
-            <div className="absolute bottom-2 right-2 bg-blue-200 text-blue-800 px-2 py-1 rounded text-xs font-semibold z-10">
-              自分
-            </div>
-          </div>
-
-          {/* 右側：手札エリア（1/4幅） */}
-          <div className="col-span-1 space-y-4">
-            
-            {/* 相手手札エリア */}
-            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 h-[45%]">
-              <h3 className="text-sm font-semibold text-red-700 mb-2">相手手札</h3>
-              <div className="space-y-2">
-                <div className="bg-red-100 border border-red-300 rounded p-2 h-16 flex items-center justify-center">
-                  <span className="text-xs text-red-600">裏面カード</span>
-                </div>
-                <div className="bg-red-100 border border-red-300 rounded p-2 h-16 flex items-center justify-center">
-                  <span className="text-xs text-red-600">裏面カード</span>
-                </div>
-                <div className="bg-red-100 border border-red-300 rounded p-2 h-16 flex items-center justify-center">
-                  <span className="text-xs text-red-600">裏面カード</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 自分手札エリア */}
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3 h-[45%]">
-              <h3 className="text-sm font-semibold text-blue-700 mb-2">自分手札</h3>
-              <div className="space-y-2">
-                <div className="bg-blue-100 border border-blue-300 rounded p-2 h-16 flex items-center justify-center">
-                  <span className="text-xs text-blue-600">カード1</span>
-                </div>
-                <div className="bg-blue-100 border border-blue-300 rounded p-2 h-16 flex items-center justify-center">
-                  <span className="text-xs text-blue-600">カード2</span>
-                </div>
-                <div className="bg-blue-100 border border-blue-300 rounded p-2 h-16 flex items-center justify-center">
-                  <span className="text-xs text-blue-600">カード3</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="h-[700px]">
+          <FreeFormPlaymat />
         </div>
 
         {/* 下部：カード選択エリアと操作ボタン */}
@@ -494,20 +312,50 @@ const BoardSimulator: React.FC = () => {
             </div>
           </div>
 
-          {/* 操作ボタン */}
-          <div className="flex space-x-4 justify-center pb-4">
-            <button
-              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-              onClick={() => alert('クリア機能（Phase 4で実装予定）')}
-            >
-              クリア
-            </button>
-            <button
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              onClick={() => alert('スクリーンショット機能（Phase 5で実装予定）')}
-            >
-              スクリーンショット
-            </button>
+          {/* 操作ボタンとエリア統計 */}
+          <div className="space-y-4 pb-4">
+            {/* エリア別統計 */}
+            {placedCards.length > 0 && (
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">配置状況</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                  {Object.entries(
+                    placedCards.reduce((acc, card) => {
+                      const areaName = card.areaId 
+                        ? playmartAreas.find(area => area.id === card.areaId)?.name || 'フリーエリア'
+                        : 'フリーエリア';
+                      acc[areaName] = (acc[areaName] || 0) + 1;
+                      return acc;
+                    }, {} as Record<string, number>)
+                  ).map(([areaName, count]) => (
+                    <div key={areaName} className="bg-gray-50 px-2 py-1 rounded">
+                      <span className="font-medium">{areaName}:</span> {count}枚
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 操作ボタン */}
+            <div className="flex space-x-4 justify-center">
+              <button
+                className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => {
+                  if (confirm('すべてのカードをクリアしますか？')) {
+                    setPlacedCards([]);
+                  }
+                }}
+                disabled={placedCards.length === 0}
+              >
+                すべてクリア ({placedCards.length}枚)
+              </button>
+              <button
+                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                onClick={() => alert('スクリーンショット機能（Phase 5で実装予定）')}
+              >
+                スクリーンショット
+              </button>
+            </div>
           </div>
         </div>
       </div>
