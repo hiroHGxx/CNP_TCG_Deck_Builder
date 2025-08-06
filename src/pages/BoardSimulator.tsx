@@ -40,18 +40,18 @@ const BoardSimulator: React.FC = () => {
   // エリア情報定義（元のプレイマットレイアウトに基づく正確な配置）
   const playmartAreas: AreaInfo[] = [
     // 相手エリア（上段）：サポーター・イベント、レイキエリア
-    { id: 'opponent-reiki', name: '相手レイキ', x: 520, y: 30, width: 160, height: 60, color: 'bg-red-100 border-red-300' },
-    { id: 'opponent-support', name: '相手サポーター・イベント', x: 100, y: 30, width: 400, height: 60, color: 'bg-red-200 border-red-400' },
+    { id: 'opponent-reiki', name: 'レイキ', x: 520, y: 30, width: 160, height: 60, color: 'bg-red-100 border-red-300' },
+    { id: 'opponent-support', name: 'サポーター・イベント', x: 100, y: 30, width: 400, height: 60, color: 'bg-red-200 border-red-400' },
     
     // 相手ゲージエリア（横幅70%増加：80→136、左右に28px拡張）
-    { id: 'opponent-gauge-1', name: '相手ゲージ1', x: 452, y: 110, width: 136, height: 80, color: 'bg-red-50 border-red-200' },
-    { id: 'opponent-gauge-2', name: '相手ゲージ2', x: 282, y: 110, width: 136, height: 80, color: 'bg-red-50 border-red-200' },
-    { id: 'opponent-gauge-3', name: '相手ゲージ3', x: 112, y: 110, width: 136, height: 80, color: 'bg-red-50 border-red-200' },
+    { id: 'opponent-gauge-1', name: 'ゲージ1', x: 452, y: 110, width: 136, height: 80, color: 'bg-red-50 border-red-200' },
+    { id: 'opponent-gauge-2', name: 'ゲージ2', x: 282, y: 110, width: 136, height: 80, color: 'bg-red-50 border-red-200' },
+    { id: 'opponent-gauge-3', name: 'ゲージ3', x: 112, y: 110, width: 136, height: 80, color: 'bg-red-50 border-red-200' },
     
     // 相手アタックエリア（ゲージと接続、縦幅20%増加：80→96、横幅80に戻す）
-    { id: 'opponent-attack-1', name: '相手アタック1', x: 480, y: 190, width: 80, height: 96, color: 'bg-red-100 border-red-300' },
-    { id: 'opponent-attack-2', name: '相手アタック2', x: 310, y: 190, width: 80, height: 96, color: 'bg-red-100 border-red-300' },
-    { id: 'opponent-attack-3', name: '相手アタック3', x: 140, y: 190, width: 80, height: 96, color: 'bg-red-100 border-red-300' },
+    { id: 'opponent-attack-1', name: 'アタック1', x: 480, y: 190, width: 80, height: 96, color: 'bg-red-100 border-red-300' },
+    { id: 'opponent-attack-2', name: 'アタック2', x: 310, y: 190, width: 80, height: 96, color: 'bg-red-100 border-red-300' },
+    { id: 'opponent-attack-3', name: 'アタック3', x: 140, y: 190, width: 80, height: 96, color: 'bg-red-100 border-red-300' },
     
     // 共有拠点エリア（中央境界線）- 80×80円形表示
     { id: 'base-1', name: '拠点1', x: 140, y: 300, width: 80, height: 80, color: 'bg-yellow-200 border-yellow-400', shape: 'circle' },
@@ -59,18 +59,18 @@ const BoardSimulator: React.FC = () => {
     { id: 'base-3', name: '拠点3', x: 480, y: 300, width: 80, height: 80, color: 'bg-yellow-200 border-yellow-400', shape: 'circle' },
     
     // 自分アタックエリア（ゲージと接続、縦幅20%増加：80→96、横幅80に戻す）
-    { id: 'player-attack-1', name: '自分アタック1', x: 140, y: 394, width: 80, height: 96, color: 'bg-blue-100 border-blue-300' },
-    { id: 'player-attack-2', name: '自分アタック2', x: 310, y: 394, width: 80, height: 96, color: 'bg-blue-100 border-blue-300' },
-    { id: 'player-attack-3', name: '自分アタック3', x: 480, y: 394, width: 80, height: 96, color: 'bg-blue-100 border-blue-300' },
+    { id: 'player-attack-1', name: 'アタック1', x: 140, y: 394, width: 80, height: 96, color: 'bg-blue-100 border-blue-300' },
+    { id: 'player-attack-2', name: 'アタック2', x: 310, y: 394, width: 80, height: 96, color: 'bg-blue-100 border-blue-300' },
+    { id: 'player-attack-3', name: 'アタック3', x: 480, y: 394, width: 80, height: 96, color: 'bg-blue-100 border-blue-300' },
     
     // 自分ゲージエリア（アタックと接続、横幅70%増加：80→136）
-    { id: 'player-gauge-1', name: '自分ゲージ1', x: 112, y: 490, width: 136, height: 80, color: 'bg-blue-50 border-blue-200' },
-    { id: 'player-gauge-2', name: '自分ゲージ2', x: 282, y: 490, width: 136, height: 80, color: 'bg-blue-50 border-blue-200' },
-    { id: 'player-gauge-3', name: '自分ゲージ3', x: 452, y: 490, width: 136, height: 80, color: 'bg-blue-50 border-blue-200' },
+    { id: 'player-gauge-1', name: 'ゲージ1', x: 112, y: 490, width: 136, height: 80, color: 'bg-blue-50 border-blue-200' },
+    { id: 'player-gauge-2', name: 'ゲージ2', x: 282, y: 490, width: 136, height: 80, color: 'bg-blue-50 border-blue-200' },
+    { id: 'player-gauge-3', name: 'ゲージ3', x: 452, y: 490, width: 136, height: 80, color: 'bg-blue-50 border-blue-200' },
     
     // 自分エリア（下段）：サポーター・イベント、レイキエリア
-    { id: 'player-support', name: '自分サポーター・イベント', x: 100, y: 610, width: 400, height: 60, color: 'bg-blue-200 border-blue-400' },
-    { id: 'player-reiki', name: '自分レイキ', x: 520, y: 610, width: 160, height: 60, color: 'bg-blue-100 border-blue-300' },
+    { id: 'player-support', name: 'サポーター・イベント', x: 100, y: 610, width: 400, height: 60, color: 'bg-blue-200 border-blue-400' },
+    { id: 'player-reiki', name: 'レイキ', x: 520, y: 610, width: 160, height: 60, color: 'bg-blue-100 border-blue-300' },
   ];
 
   // カードがどのエリアに配置されたかを判定する関数
@@ -130,6 +130,33 @@ const BoardSimulator: React.FC = () => {
           }
         }}
       >
+        {/* 中央分割線（拠点を通る点線）- エリアの下レイヤー */}
+        <div 
+          className="absolute pointer-events-none"
+          style={{
+            left: '10%',
+            right: '10%',
+            top: 340,
+            height: 2,
+            backgroundImage: 'repeating-linear-gradient(to right, #6b7280 0, #6b7280 8px, transparent 8px, transparent 16px)',
+            zIndex: 5
+          }}
+        />
+
+        {/* 相手・自分エリア表示テキスト */}
+        <div 
+          className="absolute left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded text-xs font-semibold text-red-600 pointer-events-none" 
+          style={{ top: 320, zIndex: 15 }}
+        >
+          相手
+        </div>
+        <div 
+          className="absolute left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded text-xs font-semibold text-blue-600 pointer-events-none" 
+          style={{ top: 385, zIndex: 15 }}
+        >
+          自分
+        </div>
+
         {/* エリア背景描画 */}
         {playmartAreas.map((area) => (
           <div
@@ -142,6 +169,7 @@ const BoardSimulator: React.FC = () => {
               top: area.y,
               width: area.width,
               height: area.height,
+              zIndex: area.shape === 'circle' ? 10 : 8, // 拠点を点線より上に
               ...(area.shape === 'circle' ? {
                 // 二重丸効果のためのボックスシャドウ
                 boxShadow: `inset 0 0 0 3px ${area.color.includes('yellow-200') ? '#fbbf24' : '#ffffff'}`
