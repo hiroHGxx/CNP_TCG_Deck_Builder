@@ -39,9 +39,9 @@ const BoardSimulator: React.FC = () => {
 
   // エリア情報定義（元のプレイマットレイアウトに基づく正確な配置）
   const playmartAreas: AreaInfo[] = [
-    // 相手エリア（上段）：サポーター・イベント、レイキエリア
-    { id: 'opponent-reiki', name: 'レイキ', x: 520, y: 30, width: 160, height: 60, color: 'bg-red-100 border-red-300' },
-    { id: 'opponent-support', name: 'サポーター・イベント', x: 100, y: 30, width: 400, height: 60, color: 'bg-red-200 border-red-400' },
+    // 相手エリア（上段）：サポーター・イベント、レイキエリア（位置交換）
+    { id: 'opponent-support', name: 'サポーター・イベント', x: 280, y: 30, width: 400, height: 60, color: 'bg-red-200 border-red-400' },
+    { id: 'opponent-reiki', name: 'レイキ', x: 100, y: 30, width: 160, height: 60, color: 'bg-red-100 border-red-300' },
     
     // 相手ゲージエリア（横幅70%増加：80→136、左右に28px拡張）
     { id: 'opponent-gauge-1', name: 'ゲージ1', x: 452, y: 110, width: 136, height: 80, color: 'bg-red-50 border-red-200' },
@@ -173,8 +173,8 @@ const BoardSimulator: React.FC = () => {
         {playmartAreas.map((area) => (
           <div
             key={area.id}
-            className={`absolute border-2 ${area.color} opacity-60 pointer-events-none ${
-              area.shape === 'circle' ? 'rounded-full' : 'rounded-lg'
+            className={`absolute border-2 ${area.color} pointer-events-none ${
+              area.shape === 'circle' ? 'rounded-full opacity-100' : 'rounded-lg opacity-60'
             }`}
             style={{
               left: area.x,
