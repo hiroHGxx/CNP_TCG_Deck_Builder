@@ -161,7 +161,7 @@ const BoardSimulator: React.FC = () => {
         <div 
           className="absolute bg-white px-2 py-1 rounded text-xs font-semibold text-blue-600 pointer-events-none" 
           style={{ 
-            top: 370, 
+            top: 355, 
             right: `calc(100% - 100px)`, // サポーターエリアの左端(x:100)に右端を合わせ
             zIndex: 15 
           }}
