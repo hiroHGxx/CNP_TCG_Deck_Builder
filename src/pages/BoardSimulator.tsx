@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCardDB } from '@/hooks/useCardDB';
 import { REIKI_IMAGE_PATHS, REIKI_COLOR_NAMES } from '@/utils/reikiAssets';
-import { GAUGE_IMAGE_PATHS, GAUGE_ROTATION, GAUGE_AREA_IDS, type GaugeOwner, type GaugeCard } from '@/utils/gaugeAssets';
+import { GAUGE_IMAGE_PATHS, GAUGE_ROTATION, type GaugeOwner } from '@/utils/gaugeAssets';
 import type { ReikiColor } from '@/types/reiki';
 import type { Card } from '@/types/card';
 
@@ -56,15 +56,14 @@ const BoardSimulator: React.FC = () => {
   });
   
   // ドラッグ強制リセット用タイマー参照
-  const dragResetTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const dragResetTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // カスタムドラッグシステム用状態
   const [isDragMode, setIsDragMode] = useState(false);
-  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [dragCurrentPos, setDragCurrentPos] = useState({ x: 0, y: 0 });
   
   // ダブルクリック判定用タイマー
-  const clickTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const clickTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isWaitingForDoubleClick, setIsWaitingForDoubleClick] = useState(false);
   
   // クリック情報保存用
@@ -84,7 +83,6 @@ const BoardSimulator: React.FC = () => {
     
     setDraggingCardId(cardId);
     setIsDragMode(true);
-    setDragStartPos({ x: event.clientX, y: event.clientY });
     setDragCurrentPos({ x: event.clientX, y: event.clientY });
     
     // 2秒後の強制リセット（保険）
@@ -94,12 +92,6 @@ const BoardSimulator: React.FC = () => {
     }, 2000);
   };
 
-  const updateCustomDrag = (event: React.MouseEvent) => {
-    if (isDragMode && draggingCardId) {
-      setDragCurrentPos({ x: event.clientX, y: event.clientY });
-      console.log('🎯 カスタムドラッグ更新:', { x: event.clientX, y: event.clientY });
-    }
-  };
 
   const finishCustomDrag = (targetEvent?: React.MouseEvent) => {
     if (!isDragMode || !draggingCardId) return;
@@ -144,7 +136,6 @@ const BoardSimulator: React.FC = () => {
     // 状態リセット
     setDraggingCardId(null);
     setIsDragMode(false);
-    setDragStartPos({ x: 0, y: 0 });
     setDragCurrentPos({ x: 0, y: 0 });
   };
 
