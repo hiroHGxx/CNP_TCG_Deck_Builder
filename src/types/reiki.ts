@@ -3,7 +3,7 @@
  * CNP TCG v2.0 - レイキカードシステム対応
  */
 
-export type ReikiColor = 'red' | 'blue' | 'green' | 'yellow';
+export type ReikiColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple';
 
 /**
  * レイキカード（色リソース）
@@ -21,6 +21,7 @@ export interface ColorDistribution {
   blue: number;
   green: number;
   yellow: number;
+  purple: number;
   colorless: number;
 }
 

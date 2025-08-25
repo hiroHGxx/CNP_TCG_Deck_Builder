@@ -18,6 +18,7 @@ const colorMap = {
   '青': 'blue', 
   '緑': 'green',
   '黄': 'yellow',
+  '紫': 'purple',
   '無色': 'colorless'
 };
 
@@ -116,8 +117,8 @@ function parseCSVData(csvData) {
 }
 
 function main() {
-  const inputFile = path.join(__dirname, '..', 'cnp_cards_full.csv');
-  const outputFile = path.join(__dirname, '..', 'data', 'cards.json');
+  const inputFile = path.join(__dirname, '..', 'cnp_cards_full_merged.csv');
+  const outputFile = path.join(__dirname, '..', 'src', 'data', 'cards.json');
   
   // 出力ディレクトリを作成
   const outputDir = path.dirname(outputFile);

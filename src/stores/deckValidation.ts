@@ -76,7 +76,8 @@ export const validateDeckLogic = (cards: Record<string, number>, allCards: Card[
         red: 0,
         blue: 0,
         green: 0,
-        yellow: 0
+        yellow: 0,
+        purple: 0
       }
     },
     overall: {

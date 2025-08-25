@@ -18,10 +18,11 @@ export const calculateSuggestedReiki = (mainColors: ColorDistribution): ReikiCar
   if (totalColorCards === 0) {
     // 無色デッキ: 均等配分
     return [
-      { color: 'red', count: 4 },
-      { color: 'blue', count: 4 },
-      { color: 'green', count: 4 },
-      { color: 'yellow', count: 3 }
+      { color: 'red', count: 3 },
+      { color: 'blue', count: 3 },
+      { color: 'green', count: 3 },
+      { color: 'yellow', count: 3 },
+      { color: 'purple', count: 3 }
     ];
   }
   
@@ -29,7 +30,7 @@ export const calculateSuggestedReiki = (mainColors: ColorDistribution): ReikiCar
   const suggestions: ReikiCard[] = [];
   let remaining = 15;
   
-  (['red', 'blue', 'green', 'yellow'] as const).forEach(color => {
+  (['red', 'blue', 'green', 'yellow', 'purple'] as const).forEach(color => {
     const ratio = mainColors[color] / totalColorCards;
     const suggested = Math.max(0, Math.floor(ratio * 15));
     suggestions.push({ color, count: suggested });
@@ -38,7 +39,7 @@ export const calculateSuggestedReiki = (mainColors: ColorDistribution): ReikiCar
   
   // 余りを主要色に配分
   if (remaining > 0) {
-    const sortedColors = (['red', 'blue', 'green', 'yellow'] as const)
+    const sortedColors = (['red', 'blue', 'green', 'yellow', 'purple'] as const)
       .map(color => ({ color, count: mainColors[color] }))
       .sort((a, b) => b.count - a.count);
     
@@ -175,6 +176,7 @@ export const calculateColorStats = (mainCards: Record<string, number>, allCards:
     blue: 0,
     green: 0,
     yellow: 0,
+    purple: 0,
     colorless: 0
   };
   
@@ -199,6 +201,7 @@ export const calculateColorStats = (mainCards: Record<string, number>, allCards:
     blue: distribution.blue,
     green: distribution.green,
     yellow: distribution.yellow,
+    purple: distribution.purple,
     colorless: 0 // 常に0（レイキでは使用しない）
   };
 };
