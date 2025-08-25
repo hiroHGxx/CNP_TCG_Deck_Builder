@@ -54,7 +54,7 @@ export const ReikiManager: React.FC<ReikiManagerProps> = ({ allCards = [] }) => 
       errors: [],
       warnings: [],
       totalCards: getTotalCount(),
-      colorBalance: { red: 0, blue: 0, green: 0, yellow: 0 },
+      colorBalance: { red: 0, blue: 0, green: 0, yellow: 0, purple: 0 },
       suggestions: []
     }
   }
@@ -146,12 +146,22 @@ export const ReikiManager: React.FC<ReikiManagerProps> = ({ allCards = [] }) => 
           <div className="grid grid-cols-2 gap-2 text-xs">
             {Object.entries(mainColorDistribution)
               .filter(([color]) => color !== 'colorless')
-              .map(([color, count]) => (
-                <div key={color} className="flex justify-between">
-                  <span className="capitalize">{color}:</span>
-                  <span>{count}枚</span>
-                </div>
-              ))}
+              .map(([color, count]) => {
+                const colorNames = {
+                  red: '赤',
+                  blue: '青', 
+                  green: '緑',
+                  yellow: '黄',
+                  purple: '紫'
+                };
+                const displayName = colorNames[color as keyof typeof colorNames] || color;
+                return (
+                  <div key={color} className="flex justify-between">
+                    <span>{displayName}:</span>
+                    <span>{count}枚</span>
+                  </div>
+                );
+              })}
           </div>
           
           {validation.suggestions.length > 0 && (

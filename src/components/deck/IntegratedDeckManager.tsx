@@ -110,7 +110,7 @@ const IntegratedDeckManager: React.FC<IntegratedDeckManagerProps> = () => {
       deck.reikiCards.forEach(reikiCard => {
         if (reikiCard.count > 0) {
           const colorName = {
-            red: '赤', blue: '青', green: '緑', yellow: '黄'
+            red: '赤', blue: '青', green: '緑', yellow: '黄', purple: '紫'
           }[reikiCard.color] || reikiCard.color
           textContent += `${reikiCard.count}枚 ${colorName}レイキ\n`
         }

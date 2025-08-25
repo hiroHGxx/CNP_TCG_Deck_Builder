@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useCardDB } from '@/hooks/useCardDB';
 import { REIKI_IMAGE_PATHS, REIKI_COLOR_NAMES } from '@/utils/reikiAssets';
 import { GAUGE_IMAGE_PATHS, GAUGE_ROTATION, type GaugeOwner } from '@/utils/gaugeAssets';
-import type { ReikiColor } from '@/types/reiki';
+// import type { ReikiColor } from '@/types/reiki'; // 一時的にコメントアウト - Vercel環境での型認識問題回避
 import type { Card } from '@/types/card';
 
 type CardType = 'main' | 'reiki';
+type ReikiColorLocal = 'red' | 'blue' | 'green' | 'yellow' | 'purple';
 
 interface AreaInfo {
   id: string;
@@ -22,7 +23,7 @@ interface PlacedCard {
   id: string;
   card?: Card;
   reikiData?: {
-    color: ReikiColor;
+    color: ReikiColorLocal;
     name: string;
     imageUrl: string;
     count?: number; // レイキカードの枚数管理用
@@ -69,7 +70,7 @@ const BoardSimulator: React.FC = () => {
   // クリック情報保存用
   const pendingClickRef = React.useRef<{ cardId: string; event: { clientX: number; clientY: number } } | null>(null);
   
-  const reikiColors = ['red', 'blue', 'green', 'yellow', 'purple'] as const satisfies ReikiColor[];
+  const reikiColors: readonly ReikiColorLocal[] = ['red', 'blue', 'green', 'yellow', 'purple'] as const;
 
   // カスタムドラッグシステム：確実なドラッグ処理
   const startCustomDrag = (cardId: string, event: React.MouseEvent) => {

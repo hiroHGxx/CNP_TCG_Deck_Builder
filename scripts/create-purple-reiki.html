@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>紫レイキカード画像生成</title>
+</head>
+<body>
+    <h1>紫レイキカード画像生成</h1>
+    <canvas id="canvas" width="120" height="168"></canvas>
+    <br><br>
+    <button onclick="downloadImage()">画像をダウンロード</button>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 紫レイキカードのデザイン
+        function createPurpleReikiCard() {
+            // 背景（紫色）
+            const gradient = ctx.createLinearGradient(0, 0, 0, 168);
+            gradient.addColorStop(0, '#9333ea'); // 明るい紫
+            gradient.addColorStop(0.5, '#7c3aed'); // 中間紫  
+            gradient.addColorStop(1, '#6b21a8'); // 濃い紫
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 120, 168);
+            
+            // 枠線
+            ctx.strokeStyle = '#4c1d95';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(1.5, 1.5, 117, 165);
+            
+            // 内枠
+            ctx.strokeStyle = '#8b5cf6';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(8, 8, 104, 152);
+            
+            // 中央のレイキシンボル（菱形）
+            ctx.fillStyle = '#fbbf24'; // 金色
+            ctx.beginPath();
+            ctx.moveTo(60, 40); // 上
+            ctx.lineTo(80, 60); // 右
+            ctx.lineTo(60, 80); // 下
+            ctx.lineTo(40, 60); // 左
+            ctx.closePath();
+            ctx.fill();
+            
+            // シンボル枠線
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 「レイキ」テキスト
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 16px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('レイキ', 60, 105);
+            
+            // 「紫」テキスト
+            ctx.font = 'bold 20px Arial, sans-serif';
+            ctx.fillText('紫', 60, 130);
+            
+            // 装飾的な星
+            drawStar(ctx, 25, 25, 5, 8, 4, '#fbbf24');
+            drawStar(ctx, 95, 25, 5, 8, 4, '#fbbf24');
+            drawStar(ctx, 25, 143, 5, 8, 4, '#fbbf24');
+            drawStar(ctx, 95, 143, 5, 8, 4, '#fbbf24');
+        }
+        
+        // 星を描画する関数
+        function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius, color) {
+            let rot = Math.PI / 2 * 3;
+            let x = cx;
+            let y = cy;
+            const step = Math.PI / spikes;
+            
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - outerRadius);
+            
+            for (let i = 0; i < spikes; i++) {
+                x = cx + Math.cos(rot) * outerRadius;
+                y = cy + Math.sin(rot) * outerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+                
+                x = cx + Math.cos(rot) * innerRadius;
+                y = cy + Math.sin(rot) * innerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+            }
+            
+            ctx.lineTo(cx, cy - outerRadius);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+        
+        // 画像をダウンロードする関数
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'reiki_purple.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // 画像を生成
+        createPurpleReikiCard();
+    </script>
+</body>
+</html>

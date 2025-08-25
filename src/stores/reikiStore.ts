@@ -22,7 +22,8 @@ export const useReikiStore = create<ReikiState>()(
         { color: 'red', count: 0 },
         { color: 'blue', count: 0 },
         { color: 'green', count: 0 },
-        { color: 'yellow', count: 0 }
+        { color: 'yellow', count: 0 },
+        { color: 'purple', count: 0 }
       ],
       
       // 基本操作

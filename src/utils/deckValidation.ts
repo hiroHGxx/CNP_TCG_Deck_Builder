@@ -42,6 +42,7 @@ export const validateDeck = (
     blue: 0,
     green: 0,
     yellow: 0,
+    purple: 0,
     colorless: 0
   }
   
@@ -96,7 +97,8 @@ export const validateDeck = (
         red: 0,
         blue: 0,
         green: 0,
-        yellow: 0
+        yellow: 0,
+        purple: 0
       }
     },
     overall: {
@@ -174,6 +176,7 @@ const getColorName = (color: string): string => {
     blue: '青',
     green: '緑',
     yellow: '黄',
+    purple: '紫',
     colorless: '無色'
   }
   return colorNames[color] || color

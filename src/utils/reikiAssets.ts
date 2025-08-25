@@ -2,7 +2,8 @@
  * レイキカード画像アセット管理
  */
 
-import type { ReikiColor } from '@/types/reiki'
+// import type { ReikiColor } from '@/types/reiki' // 一時的にコメントアウト - Vercel環境での型認識問題回避
+type ReikiColorLocal = 'red' | 'blue' | 'green' | 'yellow' | 'purple';
 
 /**
  * レイキカード画像パス
@@ -13,12 +14,12 @@ export const REIKI_IMAGE_PATHS = {
   green: '/images/reiki/reiki_green.png',
   yellow: '/images/reiki/reiki_yellow.png',
   purple: '/images/reiki/reiki_purple.png'
-} as const satisfies Record<ReikiColor, string>
+} as const satisfies Record<ReikiColorLocal, string>
 
 /**
  * レイキカード画像URL取得
  */
-export const getReikiImageUrl = (color: ReikiColor): string => {
+export const getReikiImageUrl = (color: ReikiColorLocal): string => {
   return REIKI_IMAGE_PATHS[color]
 }
 
@@ -31,7 +32,7 @@ export const REIKI_COLOR_NAMES = {
   green: '緑レイキ', 
   yellow: '黄レイキ',
   purple: '紫レイキ'
-} as const satisfies Record<ReikiColor, string>
+} as const satisfies Record<ReikiColorLocal, string>
 
 /**
  * レイキカードカラーコード（UI用）
@@ -42,7 +43,7 @@ export const REIKI_COLOR_CODES = {
   green: '#10b981',   // CNP green
   yellow: '#f59e0b',  // CNP yellow
   purple: '#8b5cf6'   // CNP purple
-} as const satisfies Record<ReikiColor, string>
+} as const satisfies Record<ReikiColorLocal, string>
 
 /**
  * Tailwind CSS クラス
@@ -53,4 +54,4 @@ export const REIKI_TAILWIND_CLASSES = {
   green: 'bg-green-500 text-white',
   yellow: 'bg-yellow-500 text-white',
   purple: 'bg-purple-500 text-white'
-} as const satisfies Record<ReikiColor, string>
+} as const satisfies Record<ReikiColorLocal, string>
