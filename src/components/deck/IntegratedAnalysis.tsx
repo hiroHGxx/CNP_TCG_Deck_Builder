@@ -42,7 +42,8 @@ const IntegratedAnalysis: React.FC<IntegratedAnalysisProps> = ({ cards }) => {
       red: 'bg-red-500',
       blue: 'bg-blue-500', 
       green: 'bg-green-500',
-      yellow: 'bg-yellow-500'
+      yellow: 'bg-yellow-500',
+      purple: 'bg-purple-500'
     }
     return colorClasses[color] || 'bg-gray-400'
   }
@@ -52,7 +53,8 @@ const IntegratedAnalysis: React.FC<IntegratedAnalysisProps> = ({ cards }) => {
       red: '赤',
       blue: '青',
       green: '緑',
-      yellow: '黄'
+      yellow: '黄',
+      purple: '紫'
     }
     return colorNames[color] || color
   }

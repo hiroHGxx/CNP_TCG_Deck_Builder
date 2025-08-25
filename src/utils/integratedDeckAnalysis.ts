@@ -259,7 +259,8 @@ function getColorName(color: string): string {
     red: '赤',
     blue: '青',
     green: '緑', 
-    yellow: '黄'
+    yellow: '黄',
+    purple: '紫'
   }
   return colorNames[color] || color
 }

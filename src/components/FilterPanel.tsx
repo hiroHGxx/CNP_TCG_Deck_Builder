@@ -74,7 +74,8 @@ const FilterPanel: React.FC<FilterPanelProps> = memo(({
     { value: 'red', label: '赤', bgColor: 'bg-red-500' },
     { value: 'blue', label: '青', bgColor: 'bg-blue-500' },
     { value: 'green', label: '緑', bgColor: 'bg-green-500' },
-    { value: 'yellow', label: '黄', bgColor: 'bg-yellow-500' }
+    { value: 'yellow', label: '黄', bgColor: 'bg-yellow-500' },
+    { value: 'purple', label: '紫', bgColor: 'bg-purple-500' }
   ]
 
   const cardTypeOptions: { value: CardType; label: string }[] = [
