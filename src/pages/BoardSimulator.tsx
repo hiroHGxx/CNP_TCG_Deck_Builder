@@ -69,7 +69,7 @@ const BoardSimulator: React.FC = () => {
   // クリック情報保存用
   const pendingClickRef = React.useRef<{ cardId: string; event: { clientX: number; clientY: number } } | null>(null);
   
-  const reikiColors: ReikiColor[] = ['red', 'blue', 'green', 'yellow', 'purple'];
+  const reikiColors = ['red', 'blue', 'green', 'yellow', 'purple'] as const satisfies ReikiColor[];
 
   // カスタムドラッグシステム：確実なドラッグ処理
   const startCustomDrag = (cardId: string, event: React.MouseEvent) => {
