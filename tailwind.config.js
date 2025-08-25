@@ -12,6 +12,7 @@ export default {
           blue: '#3b82f6',
           green: '#10b981',
           yellow: '#f59e0b',
+          purple: '#8b5cf6',
           gray: '#6b7280',
         }
       },

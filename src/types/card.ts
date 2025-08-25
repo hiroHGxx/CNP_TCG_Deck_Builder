@@ -21,7 +21,7 @@ export interface Card {
   imageUrl: string;         // 画像URL（Supabase CDN）
 }
 
-export type CardColor = 'red' | 'blue' | 'green' | 'yellow' | 'colorless';
+export type CardColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'colorless';
 
 export type CardRarity = 'common' | 'rare' | 'rare_rare' | 'triple_rare' | 'super_rare' | 'ultra_rare' | 'RRR';
 

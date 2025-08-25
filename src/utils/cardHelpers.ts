@@ -25,6 +25,7 @@ export const getColorDot = (color: string): string => {
     case 'blue': return 'bg-blue-500'
     case 'green': return 'bg-green-500'
     case 'yellow': return 'bg-yellow-500'
+    case 'purple': return 'bg-purple-500'
     case 'colorless': return 'bg-gray-400'
     default: return 'bg-gray-400'
   }
@@ -41,13 +42,14 @@ export const getColorDots = (colorBalance: string): Array<{ color: string; count
     '赤': 'red',
     '青': 'blue', 
     '緑': 'green',
-    '黄': 'yellow'
+    '黄': 'yellow',
+    '紫': 'purple'
   }
   
   const results: Array<{ color: string; count: number; className: string }> = []
   
   // "緑4" のような形式をパース
-  const match = colorBalance.match(/([赤青緑黄])(\d+)/)
+  const match = colorBalance.match(/([赤青緑黄紫])(\d+)/)
   if (match) {
     const [, colorChar, countStr] = match
     const color = colorMap[colorChar]
