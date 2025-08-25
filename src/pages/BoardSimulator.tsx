@@ -69,7 +69,7 @@ const BoardSimulator: React.FC = () => {
   // クリック情報保存用
   const pendingClickRef = React.useRef<{ cardId: string; event: { clientX: number; clientY: number } } | null>(null);
   
-  const reikiColors: ReikiColor[] = ['red', 'blue', 'green', 'yellow'];
+  const reikiColors: ReikiColor[] = ['red', 'blue', 'green', 'yellow', 'purple'];
 
   // カスタムドラッグシステム：確実なドラッグ処理
   const startCustomDrag = (cardId: string, event: React.MouseEvent) => {
@@ -262,13 +262,18 @@ const BoardSimulator: React.FC = () => {
         );
         
         if (existingReiki) {
-          // 既存のレイキカードがある場合は枚数増加
-          setPlacedCards(prev => prev.map(card => 
-            card.id === existingReiki.id 
-              ? { ...card, reikiData: { ...card.reikiData!, count: (card.reikiData?.count || 1) + 1 } }
-              : card
-          ));
-          console.log('📈 レイキカード枚数増加:', existingReiki.reikiData?.color);
+          // 既存のレイキカードがある場合は枚数増加（上限15枚）
+          const currentCount = existingReiki.reikiData?.count || 1;
+          if (currentCount < 15) {
+            setPlacedCards(prev => prev.map(card => 
+              card.id === existingReiki.id 
+                ? { ...card, reikiData: { ...card.reikiData!, count: currentCount + 1 } }
+                : card
+            ));
+            console.log('📈 レイキカード枚数増加:', existingReiki.reikiData?.color, `${currentCount} → ${currentCount + 1}`);
+          } else {
+            console.log('⚠️ レイキカード上限達成:', existingReiki.reikiData?.color, '15枚');
+          }
           return;
         }
       }
@@ -297,7 +302,8 @@ const BoardSimulator: React.FC = () => {
   const updateReikiCount = (cardId: string, delta: number) => {
     setPlacedCards(prev => prev.map(card => {
       if (card.id === cardId && card.reikiData) {
-        const newCount = Math.max(1, (card.reikiData.count || 1) + delta);
+        const currentCount = card.reikiData.count || 1;
+        const newCount = Math.max(1, Math.min(15, currentCount + delta));
         return { ...card, reikiData: { ...card.reikiData, count: newCount } };
       }
       return card;
@@ -815,7 +821,12 @@ const BoardSimulator: React.FC = () => {
                           −
                         </button>
                         <button
-                          className="w-4 h-4 bg-green-500 text-white text-xs rounded-full hover:bg-green-600 flex items-center justify-center pointer-events-auto"
+                          className={`w-4 h-4 text-white text-xs rounded-full flex items-center justify-center pointer-events-auto transition-colors ${
+                            (placedCard.reikiData?.count || 1) >= 15 
+                              ? 'bg-gray-400 cursor-not-allowed' 
+                              : 'bg-green-500 hover:bg-green-600'
+                          }`}
+                          disabled={(placedCard.reikiData?.count || 1) >= 15}
                           draggable={false} // ボタン自体のドラッグを完全に無効化
                           onMouseDown={(e) => {
                             e.stopPropagation(); // ドラッグ開始を防止
