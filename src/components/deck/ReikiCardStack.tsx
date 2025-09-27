@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface ReikiCardStackProps {
-  color: 'red' | 'blue' | 'green' | 'yellow';
+  color: 'red' | 'blue' | 'green' | 'yellow' | 'purple';
   count: number;
   className?: string;
 }
@@ -22,7 +22,8 @@ export const ReikiCardStack: React.FC<ReikiCardStackProps> = ({
     red: { name: '赤レイキ', imagePath: '/images/reiki/reiki_red.png', backgroundColor: '#ef4444', borderColor: '#dc2626' },
     blue: { name: '青レイキ', imagePath: '/images/reiki/reiki_blue.png', backgroundColor: '#3b82f6', borderColor: '#2563eb' },
     green: { name: '緑レイキ', imagePath: '/images/reiki/reiki_green.png', backgroundColor: '#10b981', borderColor: '#059669' },
-    yellow: { name: '黄レイキ', imagePath: '/images/reiki/reiki_yellow.png', backgroundColor: '#f59e0b', borderColor: '#d97706' }
+    yellow: { name: '黄レイキ', imagePath: '/images/reiki/reiki_yellow.png', backgroundColor: '#f59e0b', borderColor: '#d97706' },
+    purple: { name: '紫レイキ', imagePath: '/images/reiki/reiki_purple.png', backgroundColor: '#8b5cf6', borderColor: '#7c3aed' }
   };
   
   const reikiCard = reikiInfo[color];

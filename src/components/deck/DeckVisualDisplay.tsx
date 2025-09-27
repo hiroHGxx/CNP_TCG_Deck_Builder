@@ -47,7 +47,8 @@ export const DeckVisualDisplay: React.FC<DeckVisualDisplayProps> = ({
       red: 0,
       blue: 0,
       green: 0,
-      yellow: 0
+      yellow: 0,
+      purple: 0
     };
     
     reikiCards.forEach((reiki) => {
@@ -60,7 +61,8 @@ export const DeckVisualDisplay: React.FC<DeckVisualDisplayProps> = ({
       { color: 'red' as const, count: colorCounts.red },
       { color: 'blue' as const, count: colorCounts.blue },
       { color: 'green' as const, count: colorCounts.green },
-      { color: 'yellow' as const, count: colorCounts.yellow }
+      { color: 'yellow' as const, count: colorCounts.yellow },
+      { color: 'purple' as const, count: colorCounts.purple }
     ].filter(group => group.count > 0);
   }, [reikiCards]);
 
