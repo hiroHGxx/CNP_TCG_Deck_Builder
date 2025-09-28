@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Edit3, CheckCircle, AlertCircle, ChevronDown, ChevronUp, FolderOpen, HardDrive, Grid3X3, List } from 'lucide-react'
+import { Edit3, CheckCircle, AlertCircle, ChevronDown, ChevronUp, FolderOpen, HardDrive, Grid3X3, List, Cloud, Save } from 'lucide-react'
 import { useDeckStore } from '@/stores/deckStore'
 import { useReikiStore } from '@/stores/reikiStore'
+import { useConvexDecks } from '@/hooks/useConvexDecks'
+import { useConvexDeckStore } from '@/stores/convexDeckStore'
 import { ReikiManager } from './ReikiManager'
 import { SupportBPStats } from './SupportBPStats'
 import IntegratedDeckManager from './IntegratedDeckManager'
@@ -29,9 +31,14 @@ export const DeckSidebar: React.FC<DeckSidebarProps> = ({ cards, viewMode, onVie
     setCardCount, 
     clearDeck: clearMainDeck,
     hasLegacyDecks,
-    migrateLegacyDecks
+    migrateLegacyDecks,
+    saveIntegratedDeck
   } = useDeckStore()
-  const { getTotalCount: getReikiTotalCount } = useReikiStore()
+  const { getTotalCount: getReikiTotalCount, cards: reikiCards } = useReikiStore()
+  
+  // Convex統合
+  const { decks, saveDeck: saveToConvex, isLoading, deleteDeck: deleteFromConvex } = useConvexDecks()
+  const { useServerStorage, enableServerStorage, disableServerStorage } = useConvexDeckStore()
   
   const [isEditingName, setIsEditingName] = useState(false)
   const [editName, setEditName] = useState(currentDeck.name)
@@ -48,6 +55,10 @@ export const DeckSidebar: React.FC<DeckSidebarProps> = ({ cards, viewMode, onVie
     bpDistribution: false,
     costDistribution: false
   })
+  
+  // Convex状態
+  const [convexMessage, setConvexMessage] = useState('')
+  const [isConvexProcessing, setIsConvexProcessing] = useState(false)
 
   // デッキ統計計算
   const mainDeckCount = getTotalCardCount()
@@ -159,6 +170,61 @@ export const DeckSidebar: React.FC<DeckSidebarProps> = ({ cards, viewMode, onVie
       alert(`移行エラー: ${result.errors.join(', ')}`)
     }
     setShowMigrationAlert(false)
+  }
+
+  // Convex関数
+  const handleToggleStorage = () => {
+    if (useServerStorage) {
+      disableServerStorage()
+      setConvexMessage('📱 ローカル保存に切り替えました')
+    } else {
+      enableServerStorage()
+      setConvexMessage('☁️ サーバー保存に切り替えました')
+    }
+    // 3秒後にメッセージを消去
+    setTimeout(() => setConvexMessage(''), 3000)
+  }
+
+  const handleConvexSave = async () => {
+    if (!currentDeck.name.trim()) {
+      setConvexMessage('❌ デッキ名を入力してください')
+      setTimeout(() => setConvexMessage(''), 3000)
+      return
+    }
+
+    setIsConvexProcessing(true)
+    setConvexMessage('💾 サーバーに保存中...')
+
+    try {
+      const result = await saveToConvex({
+        name: currentDeck.name,
+        description: `統合デッキ - ${new Date().toLocaleDateString()}`,
+        mainCards: currentDeck.cards,
+        reikiCards: reikiCards.map(card => ({
+          color: card.color,
+          count: card.count
+        })),
+        tags: ['統合サイドバー'],
+        isPublic: false
+      })
+
+      if (result.success) {
+        setConvexMessage(`✅ サーバー保存成功！`)
+      } else {
+        setConvexMessage(`❌ 保存失敗: ${result.error}`)
+      }
+    } catch (error) {
+      setConvexMessage(`❌ エラー: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsConvexProcessing(false)
+      setTimeout(() => setConvexMessage(''), 5000)
+    }
+  }
+
+  const handleLocalSave = () => {
+    const deckId = saveIntegratedDeck(reikiCards)
+    setConvexMessage(`✅ ローカル保存完了 (ID: ${deckId})`)
+    setTimeout(() => setConvexMessage(''), 3000)
   }
 
   return (
@@ -442,8 +508,10 @@ export const DeckSidebar: React.FC<DeckSidebarProps> = ({ cards, viewMode, onVie
               </div>
             )}
           </div>
+
         </div>
       </div>
+
 
       {/* メインデッキ */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">

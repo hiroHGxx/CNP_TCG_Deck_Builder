@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Save, FolderOpen, Trash2, Download, Upload } from 'lucide-react'
+import { Save, FolderOpen, Trash2, Download, Upload, Cloud, HardDrive } from 'lucide-react'
 import { useDeckStore } from '@/stores/deckStore'
 import { useReikiStore } from '@/stores/reikiStore'
+import { useConvexDecks } from '@/hooks/useConvexDecks'
+import { useConvexDeckStore } from '@/stores/convexDeckStore'
 import type { Deck } from '@/types/card'
 
 interface IntegratedDeckManagerProps {}
@@ -23,6 +25,14 @@ const IntegratedDeckManager: React.FC<IntegratedDeckManagerProps> = () => {
   } = useDeckStore()
   
   const { cards: reikiCards, clear: clearReiki, setColor } = useReikiStore()
+  
+  // Convex統合
+  const { decks: convexDecks, saveDeck: saveToConvex, isLoading, deleteDeck: deleteFromConvex } = useConvexDecks()
+  const { useServerStorage, enableServerStorage, disableServerStorage } = useConvexDeckStore()
+  
+  // UI状態
+  const [convexMessage, setConvexMessage] = useState('')
+  const [isConvexProcessing, setIsConvexProcessing] = useState(false)
   
   const savedDecks = getIntegratedDecks().sort((a, b) => {
     // updatedAtまたはcreatedAtで降順ソート（最新が上）
@@ -73,6 +83,90 @@ const IntegratedDeckManager: React.FC<IntegratedDeckManagerProps> = () => {
     }
     setShowConfirm(false)
     setConfirmAction(null)
+  }
+
+  // Convex統合機能
+  const handleToggleStorage = () => {
+    if (useServerStorage) {
+      disableServerStorage()
+      setConvexMessage('📱 ローカル保存に切り替えました')
+    } else {
+      enableServerStorage()
+      setConvexMessage('☁️ サーバー保存に切り替えました')
+    }
+    setTimeout(() => setConvexMessage(''), 3000)
+  }
+
+  const handleConvexSave = async () => {
+    if (!currentDeck.name.trim()) {
+      setConvexMessage('❌ デッキ名を入力してください')
+      setTimeout(() => setConvexMessage(''), 3000)
+      return
+    }
+
+    setIsConvexProcessing(true)
+    setConvexMessage('💾 サーバーに保存中...')
+
+    try {
+      const result = await saveToConvex({
+        name: currentDeck.name,
+        description: `統合デッキ - ${new Date().toLocaleDateString()}`,
+        mainCards: currentDeck.cards,
+        reikiCards: reikiCards.map(card => ({
+          color: card.color,
+          count: card.count
+        })),
+        tags: ['デッキ管理'],
+        isPublic: false
+      })
+
+      if (result.success) {
+        setConvexMessage(`✅ サーバー保存成功！`)
+      } else {
+        setConvexMessage(`❌ 保存失敗: ${result.error}`)
+      }
+    } catch (error) {
+      setConvexMessage(`❌ エラー: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsConvexProcessing(false)
+      setTimeout(() => setConvexMessage(''), 5000)
+    }
+  }
+
+  const handleConvexLoad = async (convexDeck: any) => {
+    try {
+      setConvexMessage('📥 サーバーからデッキを読み込み中...')
+      
+      // メインデッキをクリア（デッキ名もリセットされる）
+      clearDeck()
+      
+      // デッキ名を設定（clearDeckの後に実行）
+      setDeckName(convexDeck.name)
+      
+      // メインカードを復元
+      if (convexDeck.mainCards) {
+        Object.entries(convexDeck.mainCards as Record<string, number>).forEach(([cardId, count]) => {
+          setCardCount(cardId, count)
+        })
+      }
+      
+      // レイキカードを復元
+      clearReiki()
+      if (convexDeck.reikiCards && Array.isArray(convexDeck.reikiCards)) {
+        convexDeck.reikiCards.forEach((reikiCard: any) => {
+          if (reikiCard.color && typeof reikiCard.count === 'number') {
+            setColor(reikiCard.color, reikiCard.count)
+          }
+        })
+      }
+      
+      setConvexMessage(`✅ サーバーデッキ「${convexDeck.name}」を読み込みました！`)
+      setTimeout(() => setConvexMessage(''), 3000)
+      
+    } catch (error) {
+      setConvexMessage(`❌ 読み込みエラー: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      setTimeout(() => setConvexMessage(''), 5000)
+    }
   }
 
   const handleExport = (deck: Deck, format: 'json' | 'text' = 'json') => {
@@ -200,7 +294,22 @@ const IntegratedDeckManager: React.FC<IntegratedDeckManagerProps> = () => {
     <div className="space-y-6">
       {/* 現在のデッキを保存 */}
       <div className="border border-gray-200 rounded-lg p-4 bg-blue-50">
-        <h3 className="font-semibold text-gray-900 mb-3">現在のデッキを保存</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-gray-900">現在のデッキを保存</h3>
+          
+          {/* ストレージ切り替え */}
+          <button
+            onClick={handleToggleStorage}
+            className={`flex items-center space-x-1 px-3 py-1 text-sm rounded border transition-colors ${
+              useServerStorage 
+                ? 'bg-blue-100 border-blue-300 text-blue-700 hover:bg-blue-200'
+                : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            {useServerStorage ? <Cloud className="w-3 h-3" /> : <HardDrive className="w-3 h-3" />}
+            <span>{useServerStorage ? 'サーバー' : 'ローカル'}</span>
+          </button>
+        </div>
         
         <div className="space-y-3">
           <input
@@ -210,14 +319,29 @@ const IntegratedDeckManager: React.FC<IntegratedDeckManagerProps> = () => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             placeholder="デッキ名を入力"
           />
+          
           <div className="flex items-center space-x-2">
-            <button
-              onClick={handleSave}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center justify-center space-x-2"
-            >
-              <Save className="h-4 w-4" />
-              <span>保存</span>
-            </button>
+            {/* 保存ボタン */}
+            {useServerStorage ? (
+              <button
+                onClick={handleConvexSave}
+                disabled={isConvexProcessing || !currentDeck.name.trim()}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Cloud className="h-4 w-4" />
+                <span>{isConvexProcessing ? '保存中...' : 'サーバー保存'}</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleSave}
+                disabled={!currentDeck.name.trim()}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <HardDrive className="h-4 w-4" />
+                <span>ローカル保存</span>
+              </button>
+            )}
+            
             <button
               onClick={handleImport}
               className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center justify-center space-x-2"
@@ -227,6 +351,13 @@ const IntegratedDeckManager: React.FC<IntegratedDeckManagerProps> = () => {
               <span>読み込み</span>
             </button>
           </div>
+          
+          {/* メッセージ表示 */}
+          {convexMessage && (
+            <div className="p-2 bg-white border border-blue-200 rounded text-sm text-blue-800">
+              {convexMessage}
+            </div>
+          )}
         </div>
         
         <div className="text-sm text-gray-600">
@@ -237,16 +368,43 @@ const IntegratedDeckManager: React.FC<IntegratedDeckManagerProps> = () => {
 
       {/* 保存済みデッキ一覧 */}
       <div>
-        <h3 className="font-semibold text-gray-900 mb-3">
-          保存済みデッキ ({savedDecks.length}個)
-        </h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-gray-900">
+            保存済みデッキ ({useServerStorage ? (convexDecks?.length || 0) : savedDecks.length}個)
+          </h3>
+          <div className="flex items-center space-x-1 text-xs text-gray-600">
+            {useServerStorage ? (
+              <>
+                <Cloud className="w-3 h-3" />
+                <span>サーバー</span>
+              </>
+            ) : (
+              <>
+                <HardDrive className="w-3 h-3" />
+                <span>ローカル</span>
+              </>
+            )}
+          </div>
+        </div>
         
-        {savedDecks.length === 0 ? (
+        {/* ローカルデッキ表示 */}
+        {!useServerStorage && savedDecks.length === 0 && (
           <div className="text-center py-8 text-gray-500 border border-gray-200 rounded-lg">
             <FolderOpen className="h-12 w-12 mx-auto text-gray-300 mb-2" />
             <p>保存されたデッキがありません</p>
           </div>
-        ) : (
+        )}
+        
+        {/* サーバーデッキ表示 */}
+        {useServerStorage && (!convexDecks || convexDecks.length === 0) && (
+          <div className="text-center py-8 text-gray-500 border border-gray-200 rounded-lg">
+            <Cloud className="h-12 w-12 mx-auto text-gray-300 mb-2" />
+            <p>サーバーに保存されたデッキがありません</p>
+          </div>
+        )}
+        
+        {/* ローカルデッキ一覧 */}
+        {!useServerStorage && savedDecks.length > 0 && (
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {savedDecks.map((deck) => (
               <div key={deck.deckId} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
@@ -302,6 +460,56 @@ const IntegratedDeckManager: React.FC<IntegratedDeckManagerProps> = () => {
                       >
                         <Download className="h-3 w-3" />
                         <span>TXT</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {/* サーバーデッキ一覧 */}
+        {useServerStorage && convexDecks && convexDecks.length > 0 && (
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {convexDecks.map((deck) => (
+              <div key={deck._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900 flex items-center">
+                      <Cloud className="w-4 h-4 mr-2 text-blue-600" />
+                      {deck.name}
+                    </h4>
+                    <div className="text-sm text-gray-600 mt-1">
+                      メイン: {deck.totalMainCards}枚、
+                      レイキ: {deck.totalReikiCards}枚
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      作成: {new Date(deck.createdAt).toLocaleDateString()}
+                      {deck.updatedAt !== deck.createdAt && (
+                        <span> • 更新: {new Date(deck.updatedAt).toLocaleDateString()}</span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col space-y-2 ml-4 min-w-0">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleConvexLoad(deck)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                        title="読み込み"
+                      >
+                        <FolderOpen className="h-4 w-4" />
+                        <span>読込</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => deleteFromConvex(deck._id)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                        title="削除"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span>削除</span>
                       </button>
                     </div>
                   </div>
