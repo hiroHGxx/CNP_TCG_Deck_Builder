@@ -1,7 +1,6 @@
 import { v } from "convex/values"
 import { mutation, query } from "./_generated/server"
 import { Doc, Id } from "./_generated/dataModel"
-import { api } from "./_generated/api"
 
 /**
  * デッキ保存（新規作成・更新）
@@ -50,13 +49,13 @@ export const saveDeck = mutation({
       .reduce((sum, reiki) => sum + reiki.count, 0)
     
     // 主要色抽出（メインカードから）
-    const mainColors = extractMainColors(args.mainCards as Record<string, number>)
+    const mainColors = extractMainColors()
     
     // 平均コスト計算（簡易版）
-    const avgCost = calculateAverageCost(args.mainCards as Record<string, number>)
+    const avgCost = calculateAverageCost()
     
     // 色分布計算
-    const colorDistribution = calculateColorDistribution(args.mainCards as Record<string, number>)
+    const colorDistribution = calculateColorDistribution()
     
     const deckData = {
       userId,
@@ -99,7 +98,7 @@ export const getUserDecks = query({
   args: {
     userId: v.optional(v.string()), // TODO: 認証後に必須化
   },
-  handler: async (ctx, args): Promise<Doc<"decks">[]> => {
+  handler: async (ctx): Promise<Doc<"decks">[]> => {
     // 一時的にデフォルトユーザーを取得
     const defaultEmail = "test@cnp-tcg.local"
     
@@ -166,7 +165,7 @@ export const getPublicDecks = query({
 /**
  * 主要色抽出（簡易版）
  */
-function extractMainColors(mainCards: Record<string, number>): string[] {
+function extractMainColors(): string[] {
   // TODO: 実際のカードデータから色情報を取得
   // 現在は仮実装
   return ["red", "blue"] // プレースホルダー
@@ -175,7 +174,7 @@ function extractMainColors(mainCards: Record<string, number>): string[] {
 /**
  * 平均コスト計算（簡易版）
  */
-function calculateAverageCost(mainCards: Record<string, number>): number {
+function calculateAverageCost(): number {
   // TODO: 実際のカードデータからコスト情報を取得
   // 現在は仮実装
   return 3.5 // プレースホルダー
@@ -184,7 +183,7 @@ function calculateAverageCost(mainCards: Record<string, number>): number {
 /**
  * 色分布計算（簡易版）
  */
-function calculateColorDistribution(mainCards: Record<string, number>) {
+function calculateColorDistribution() {
   // TODO: 実際のカードデータから色分布を計算
   // 現在は仮実装
   return {

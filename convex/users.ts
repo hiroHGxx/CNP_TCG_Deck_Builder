@@ -1,5 +1,5 @@
 import { v } from "convex/values"
-import { mutation, query } from "./_generated/server"
+import { mutation } from "./_generated/server"
 
 /**
  * 一時ユーザー作成（認証実装前の仮機能）

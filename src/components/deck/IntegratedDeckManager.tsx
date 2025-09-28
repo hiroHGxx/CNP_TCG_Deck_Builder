@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Save, FolderOpen, Trash2, Download, Upload, Cloud, HardDrive } from 'lucide-react'
+import { FolderOpen, Trash2, Download, Upload, Cloud, HardDrive } from 'lucide-react'
 import { useDeckStore } from '@/stores/deckStore'
 import { useReikiStore } from '@/stores/reikiStore'
 import { useConvexDecks } from '@/hooks/useConvexDecks'
@@ -27,7 +27,7 @@ const IntegratedDeckManager: React.FC<IntegratedDeckManagerProps> = () => {
   const { cards: reikiCards, clear: clearReiki, setColor } = useReikiStore()
   
   // Convex統合
-  const { decks: convexDecks, saveDeck: saveToConvex, isLoading, deleteDeck: deleteFromConvex } = useConvexDecks()
+  const { decks: convexDecks, saveDeck: saveToConvex, deleteDeck: deleteFromConvex } = useConvexDecks()
   const { useServerStorage, enableServerStorage, disableServerStorage } = useConvexDeckStore()
   
   // UI状態
