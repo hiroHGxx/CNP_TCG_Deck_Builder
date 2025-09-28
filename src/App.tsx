@@ -4,6 +4,7 @@ import DeckBuilderIntegrated from './pages/DeckBuilderIntegrated'
 import MatchLog from './pages/MatchLog'
 import Stats from './pages/Stats'
 import BoardSimulator from './pages/BoardSimulator'
+import { ConvexTest } from './components/ConvexTest'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/match-log/:id" element={<MatchLog />} />
         <Route path="/stats" element={<Stats />} />
         <Route path="/board-simulator" element={<BoardSimulator />} />
+        <Route path="/convex-test" element={<ConvexTest />} />
       </Routes>
     </Layout>
   )
