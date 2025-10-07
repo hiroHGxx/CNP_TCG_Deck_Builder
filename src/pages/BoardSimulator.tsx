@@ -256,25 +256,15 @@ const BoardSimulator: React.FC = () => {
     
     // 新しいカード配置の場合
     if (data.type === 'main-card' || data.type === 'reiki-card') {
-      // レイキカードの1枚制限チェック
+      // レイキカードの2枚制限チェック
       if (data.type === 'reiki-card') {
-        const existingReiki = placedCards.find(
+        const sameColorCount = placedCards.filter(
           card => card.reikiData?.color === data.color
-        );
-        
-        if (existingReiki) {
-          // 既存のレイキカードがある場合は枚数増加（上限15枚）
-          const currentCount = existingReiki.reikiData?.count || 1;
-          if (currentCount < 15) {
-            setPlacedCards(prev => prev.map(card => 
-              card.id === existingReiki.id 
-                ? { ...card, reikiData: { ...card.reikiData!, count: currentCount + 1 } }
-                : card
-            ));
-            console.log('📈 レイキカード枚数増加:', existingReiki.reikiData?.color, `${currentCount} → ${currentCount + 1}`);
-          } else {
-            console.log('⚠️ レイキカード上限達成:', existingReiki.reikiData?.color, '15枚');
-          }
+        ).length;
+
+        if (sameColorCount >= 2) {
+          alert(`${data.name}は既に2つ配置されています（最大2つまで）`);
+          console.log('⚠️ レイキカード配置上限:', data.name, '既に2つ配置済み');
           return;
         }
       }
@@ -875,6 +865,9 @@ const BoardSimulator: React.FC = () => {
           </h1>
           <p className="text-sm text-gray-600">
             ドラッグ&ドロップでCNP TCGの盤面を作成し、スクリーンショットで共有できます
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            💡 配置したカードをダブルクリックすると90度回転します
           </p>
         </div>
       </div>
